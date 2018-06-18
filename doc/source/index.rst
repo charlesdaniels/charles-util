@@ -6,6 +6,7 @@
    :maxdepth: 2
    :caption: Scripts:
    :glob:
+   :titlesonly:
 
    script/*
 
