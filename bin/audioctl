@@ -70,6 +70,20 @@ if [ "$VOLUME_MANAGER" = "pactl" ] ; then
 		awk -F": " '/^Default sink name: /{print $2}')"
 fi
 
+run_cmus_cmd () {
+	if [ -x "$(which cmus-remote)" ] ; then
+		if cmus-remote -Q > /dev/null 2>&1 ; then
+			cmus-remote $@
+		fi
+	fi
+}
+
+run_mpc_cmd () {
+	if [ -x "$(which mpc)" ] ; then
+		mpc $@
+	fi
+}
+
 case "$VERB" in
 	up)
 		case "$VOLUME_MANAGER" in
@@ -146,31 +160,36 @@ case "$VERB" in
 	play)
 		send_notification "playing music"
 		if [ "$HAS_CMUS" = "YES" ] ; then
-			cmus-remote --play
+			run_cmus_cmd --play
+			run_mpc_cmd play
 		fi
 		;;
 	pause)
 		send_notification "pausing music"
 		if [ "$HAS_CMUS" = "YES" ] ; then
-			cmus-remote --pause
+			run_cmus_cmd --pause
+			run_mpc_cmd pause
 		fi
 		;;
 	toggle)
 		send_notification "toggled play/pause"
 		if [ "$HAS_CMUS" = "YES" ] ; then
-			cmus-remote --pause
+			run_cmus_cmd --pause
+			run_mpc_cmd toggle
 		fi
 		;;
 	next)
 		send_notification "skipping track"
 		if [ "$HAS_CMUS" = "YES" ] ; then
-			cmus-remote --next
+			run_cmus_cmd --next
+			run_mpc_cmd next
 		fi
 		;;
 	prev)
 		send_notification "previous track"
 		if [ "$HAS_CMUS" = "YES" ] ; then
-			cmus-remote --prev
+			run_cmus_cmd --prev
+			run_mpc_cmd prev
 		fi
 		;;
 	help)
