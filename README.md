@@ -1,5 +1,9 @@
 # `charles-util`
 
+[![Documentation Status](https://readthedocs.org/projects/charles-util/badge/?version=latest)](https://charles-util.readthedocs.io/en/latest/?badge=latest)
+
+# Overview
+
 This repository is where I drop scripts, utilities, and tools which are too
 small to warrant their own repositories. This was formerly integrated into my
 dotfiles repository, but by popular demand I have made it a standalone
@@ -17,4 +21,4 @@ example `make PREFIX=/usr/local install`, which would install the scripts into
 
 # License
 
-See `LICENSE`.
+See [LICENSE](./LICENSE).
