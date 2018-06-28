@@ -10,6 +10,7 @@
 CMDSHELL="nios2_command_shell.sh"
 SEARCH_PATHS="/opt/altera/quartus_12.1/nios2eds/"
 SEARCH_PATHS="$SEARCH_PATHS /usr/local/3rdparty/altera/quartus12/nios2eds/"
+SEARCH_PATHS="$SEARCH_PATHS /opt/altera/14.0/nios2eds"
 
 for edsdir in $SEARCH_PATHS ; do
 	if [ -d "$edsdir" ] ; then
