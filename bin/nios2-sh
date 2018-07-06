@@ -2,24 +2,41 @@
 
 # .SCRIPTDOC
 
-# Search paths where I am likely to have a Quartus instance, find an
-# appropriate NIOS2 command shell launcher, and launch zsh inside of it.
+# Use nios2-search to enter a nios2 EDS environment.
+#
+# .SYNTAX
+#
+# $1 . . . specify targer version number
 
 # .ENDOC
 
 CMDSHELL="nios2_command_shell.sh"
-SEARCH_PATHS="/opt/altera/quartus_12.1/nios2eds/"
-SEARCH_PATHS="$SEARCH_PATHS /usr/local/3rdparty/altera/quartus12/nios2eds/"
-SEARCH_PATHS="$SEARCH_PATHS /opt/altera/14.0/nios2eds"
 
-for edsdir in $SEARCH_PATHS ; do
-	if [ -d "$edsdir" ] ; then
-		echo "Launching EDS environment from $edsdir"
-		"$edsdir/$CMDSHELL" zsh -i
-		exit $?
-	fi
-done
+if [ ! -x "$(which nios2-search)" ] ; then
+	echo "FATAL: no nios2-search in PATH"
+	exit 1
+fi
 
-echo "ERROR: no '$CMDSHELL' found in any of: $SEARCH_PATHS"
-exit 1
+if [ $# -ge 1 ] ; then
+	EDSDIR=$(nios2-search --get_version $1)
+	SEARCHSTATUS=$?
+else
+	EDSDIR=$(nios2-search --get)
+	SEARCHSTATUS=$?
+fi
+
+if [ $SEARCHSTATUS -ne 0 ] ; then
+	echo "FATAL: nios2-search returned an error state"
+	exit 1
+fi
+
+TARGET_SHELL=zsh
+if [ ! -x "$(which $TARGET_SHELL)" ] ; then
+	TARGET_SHELL=bash
+fi
+
+echo "Launching EDS environment from $EDSDIR with shell $TARGET_SHELL"
+"$EDSDIR/$CMDSHELL" $TARGET_SHELL -i
+exit $?
+
 

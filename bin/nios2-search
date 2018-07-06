@@ -1,0 +1,286 @@
+#!/usr/bin/env python3
+
+import argparse
+import sys
+import appdirs
+import os
+import shutil
+import json
+import re
+
+verbose_flag = False
+
+def write_verbose(msg):
+    global verbose_flag
+    if verbose_flag:
+        sys.stderr.write(msg)
+        sys.stderr.write("\n")
+        sys.stderr.flush()
+
+def get_cache_dir():
+    return os.path.join(appdirs.user_data_dir(), "nios2-search")
+
+def get_cache_file():
+    return os.path.join(get_cache_dir(), "cache.json")
+
+def purge():
+
+    # delete the cache directory, if it exists
+    write_verbose("purging cache... ")
+    if os.path.exists(get_cache_dir()):
+        write_verbose("begin deletion")
+        shutil.rmtree(get_cache_dir())
+        write_verbose("cache purge complete")
+
+    else:
+        write_verbose("cache directory nonexistant")
+
+def parse_version(edspath):
+    write_verbose("parsing version data from nios2eds installation {}"
+                  .format(edspath))
+
+    # check that the file exists
+    version_file = os.path.join(edspath, "version.txt")
+    if not os.path.isfile(version_file):
+        write.verbose("no version file, not a nios2eds installation.")
+        return None
+
+    # attempt to load it, note that the caller should catch any exception
+    # we throw here
+    version_contents = ""
+    with open(version_file, "r") as f:
+        version_contents = f.read()
+
+    # sample of version string: Kit: Nios II EDS, Version: 14.0, Build: 200
+    return version_contents.split(",")[1].split(":")[1].strip()
+
+
+def search():
+    write_verbose("beginning search... ")
+
+    # enumerate all candidate directories on the system
+    candidates = []
+    for dirpath, dirnames, files in os.walk("/"):
+        for name in files:
+            if name == "nios2_command_shell.sh":
+                write_verbose("found candidate at {}".format(dirpath))
+                candidates.append(dirpath)
+
+    write_verbose("found {} candidates".format(len(candidates)))
+
+    # iterate over each candidate directory and try to parse version.txt
+    installations = []
+    for candidate in candidates:
+        write_verbose("considering candidate {}".format(candidate))
+        version = None
+        try:
+            version = parse_version(candidate)
+        except Exception as e:
+            write_verbose("Failed to parse version due to exception: {}"
+                          .format(e))
+            continue
+        if version is None:
+            write_verbose("Missing or invalid version file.")
+            continue
+        installations.append({"version": version, "path": candidate})
+    write_verbose("indexed {} installations".format(len(installations)))
+
+    write_verbose("saving results... ")
+    write_cache_file(installatioins)
+
+def write_cache_file(contents):
+    # ensure the cache dir exists
+    if not os.path.isdir(get_cache_dir()):
+        write_verbose("creating cache dir...")
+        os.makedirs(get_cache_dir(), exist_ok=True)
+
+    # write the results
+    write_verbose("writing data to cache file... ")
+    with open(get_cache_file(), 'w') as f:
+        f.write(json.dumps(contents))
+
+    write_verbose("write completed.")
+
+def load_cache_file():
+    # Load the cache file, if it exists. If it does not, we automatically
+    # search in order to generate one.
+    write_verbose("loading cache file")
+    if not os.path.isfile(get_cache_file()):
+        write_verbose("cache files does not exist, beginning search... ")
+        search()
+
+    # cache file should be guaranteed to exist now
+    with open(get_cache_file(), 'r') as f:
+        return json.loads(f.read())
+
+def print_list(l):
+    # we write the headers on stderr to make parsing stdout easier
+    sys.stderr.write("Number\tPref\tVersion\tPath\n")
+    sys.stderr.flush() # ensure the header goes first
+    i = 0
+    for row in l:
+
+        # if a preference has been set, print a * in the appropriet column
+        preferred = ""
+        if 'preferred' in row:
+            if row['preferred'] == True:
+                preferred = "*"
+
+        sys.stdout.write("{}\t{}\t{}\t{}"
+                         .format(i, preferred, row["version"], row["path"]))
+        sys.stdout.write("\n")
+
+    sys.stdout.flush()
+
+def search_version(target):
+    r = ".*{}.*".format(target)
+    pattern = re.compile(r)
+    write_verbose("searching for install with version matching {}".format(r))
+
+    results = []
+    for row in load_cache_file():
+        if pattern.match(row["version"]):
+            results.append(row)
+
+    write_verbose("search found {} results".format(len(results)))
+
+    return results
+
+def setpref(n):
+    write_verbose("toggling preference for installation {}".format(n))
+
+    installations = load_cache_file()
+
+    if 'preferred' in installations[n]:
+        if installations[n]['preferred']:
+            write_verbose("toggling from true to false")
+            installations[n]['preferred'] = False
+        else:
+            write_verbose("toggling from false to true")
+            installations[n]['preferred'] = True
+    else:
+        write_verbose("setting initial value to true")
+        installations[n]['preferred'] = True
+
+    write_cache_file(installations)
+
+def get(query=""):
+    query = ".*{}.*".format(query)
+    pattern  = re.compile(query)
+    write_verbose("getting install directory with version matching {}... "
+                  .format(query))
+
+    result = None
+    best_non_preferred = None
+    installations = load_cache_file()
+
+    # try to find a preferred installation directory
+    for row in installations:
+
+        # drop version mismatches
+        if not pattern.match(row["version"]):
+            continue
+
+        # select the best instance that matches the query but has not been
+        # marked as preferred
+        if best_non_preferred is None:
+            best_non_preferred = row
+
+        if 'preferred' in row:
+            if row['preferred']:
+                write_verbose("preferred install found: {}".format(row))
+                result = row
+                break
+
+    if result is None:
+        write_verbose("no preferred install, failing over to non-preferred")
+        result = best_non_preferred
+
+    if result is None:
+        sys.stderr.write("FATAL: no installation directory found")
+        sys.stderr.write(" matching version query '{}'.\n".format(query))
+        sys.stderr.flush()
+        exit(1)
+    else:
+        write_verbose("selected result: {}".format(result))
+        sys.stdout.write(result["path"])
+        sys.stdout.flush()
+        exit(0)
+
+def main():
+    descr = """
+    This script can be used to locate installations of Altera Quartus
+    (specifically the NIOS tooling packages installed therein). Once located,
+    it will cache the located instances so that they can be queried by other
+    scripts. Note that the cache is actually stored in user_data_dir
+    (~/.local/share on Linux) to prevent it from being inadvertently deleted by
+    cache cleaning.
+    """
+
+    parser = argparse.ArgumentParser(description=descr)
+
+    action = parser.add_mutually_exclusive_group()
+
+    parser.add_argument("--purge", "-p", default=False, action="store_true",
+            help="Purge cached installation directories.")
+
+    parser.add_argument("--search", "-s", default=False, action="store_true",
+            help="Force a fresh search for Quartus installation" +
+            "directories. This implies --purge. Note that the search " +
+            "operation can take a long time, as it traverses the entire" +
+            " filesystem in it's search.")
+
+    action.add_argument("--list", "-l", default=False, action="store_true",
+            help="List installation directories. If the cache is empty, " +
+            "then --search is implied.")
+
+    action.add_argument("--list_version", "-i", default=None,
+            help="List installation directories where the detected version " +
+            "number is similar to the one specified here.")
+
+    action.add_argument("--setpref", "-e", default=None, type=int,
+            help="Toggle preference state for the specified installation")
+
+    action.add_argument("--get", "-g", default=False, action="store_true",
+            help="Get the first installation directory flagged as preferred," +
+            " or the first if none is flagged as preferred.")
+
+    action.add_argument("--get_version", "-G", default=None,
+            help="Get the first installation directory flagged as preferred," +
+            " or the first if none is flagged as preferred, which also " +
+            "has a version similar to the one specified.")
+
+
+    parser.add_argument("--verbose", "-v", default=False, action="store_true")
+
+    args = parser.parse_args()
+
+    global verbose_flag
+    verbose_flag = args.verbose
+    write_verbose("verbose output enabled") # wont print if not enabled
+
+    write_verbose("cache directory: {}".format(get_cache_dir()))
+    if args.purge:
+        purge()
+
+    if args.search:
+        purge()
+        search()
+
+    if args.list:
+        print_list(load_cache_file())
+
+    if args.setpref is not None:
+        setpref(args.setpref)
+
+    if args.list_version:
+        print_list(search_version(args.list_version))
+
+    if args.get:
+        get()
+
+    if args.get_version is not None:
+        get(args.get_version)
+
+if __name__ == "__main__":
+    main()
