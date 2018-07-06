@@ -135,6 +135,8 @@ def print_list(l):
                          .format(i, preferred, row["version"], row["path"]))
         sys.stdout.write("\n")
 
+        i += 1
+
     sys.stdout.flush()
 
 def search_version(target):
