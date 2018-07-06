@@ -65,7 +65,7 @@ def search():
         for name in files:
             count += 1
             if count % 100000 == 0:
-                write_verbose("processed {} files".format(count))
+                write_verbose("processed {} files ({})".format(count, dirpath))
 
             if name == "nios2_command_shell.sh":
                 write_verbose("found candidate at {}".format(dirpath))
