@@ -36,6 +36,13 @@ if [ ! -x "$(which $TARGET_SHELL)" ] ; then
 fi
 
 echo "Launching EDS environment from $EDSDIR with shell $TARGET_SHELL"
+cat "$EDSDIR/version.txt"
+
+if [ -e "$HOME/.altera_license_setup" ] ; then
+	echo "executing license setup file... "
+	. "$HOME/.altera_license_setup"
+fi
+
 "$EDSDIR/$CMDSHELL" $TARGET_SHELL -i
 exit $?
 

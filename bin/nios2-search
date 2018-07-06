@@ -60,8 +60,13 @@ def search():
 
     # enumerate all candidate directories on the system
     candidates = []
+    count = 0
     for dirpath, dirnames, files in os.walk("/"):
         for name in files:
+            count += 1
+            if count % 100000 == 0:
+                write_verbose("processed {} files".format(count))
+
             if name == "nios2_command_shell.sh":
                 write_verbose("found candidate at {}".format(dirpath))
                 candidates.append(dirpath)
@@ -86,7 +91,7 @@ def search():
     write_verbose("indexed {} installations".format(len(installations)))
 
     write_verbose("saving results... ")
-    write_cache_file(installatioins)
+    write_cache_file(installations)
 
 def write_cache_file(contents):
     # ensure the cache dir exists
