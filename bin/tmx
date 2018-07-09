@@ -47,6 +47,12 @@ else
         # Create a new session (without attaching it) and link to base session
         # to share windows
         tmux new-session -d -t $base_session -s $session_id
+
+	# allow automatically spawning new windows on launch
+	if [ "$2" = "spawn" ] ; then
+		tmux new-window
+	fi
+
         # Attach to the new session
         tmux attach-session -t $session_id
         # When we detach from it, kill the session
