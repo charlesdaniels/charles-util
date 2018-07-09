@@ -51,19 +51,26 @@ def parse_file(fpath):
         server = None
         for line in f:
             line = line.strip().replace(";", "").split()
-            if line[0] == "interface":
-                interface = line[1].replace('"', "")
-            elif line[0] == "fixed-address":
-                addr = line[1]
-            elif line[0] == "dhcp-server-identifier":
-                server = line[1];
-            elif "}" in line:
-                sys.stdout.write("{}\t{}\t{}\t{}\n".format(
-                        interface,
-                        addr,
-                        server,
-                        fpath))
-                sys.stdout.flush()
+            try:
+                if "}" in line:
+                    sys.stdout.write("{}\t{}\t{}\t{}\n".format(
+                            interface,
+                            addr,
+                            server,
+                            fpath))
+                    sys.stdout.flush()
+
+                if line[0] == "interface":
+                    interface = line[1].replace('"', "")
+
+                if line[0] == "fixed-address":
+                    addr = line[1]
+
+                if line[1] == "dhcp-server-identifier":
+                    server = line[2];
+
+            except IndexError:
+                continue
 
 def main():
     parser = argparse.ArgumentParser(description=descr)
@@ -77,7 +84,7 @@ def main():
 
     lease_dir = pathlib.Path(args.leasedir)
 
-    sys.stderr.write("iface\taddr\t\tsrv\tfile\n")
+    sys.stderr.write("iface\taddr\t\tsrv\t\tfile\n")
     sys.stderr.flush()
     for leasefile in lease_dir.glob("*.leases"):
         parse_file(leasefile)
