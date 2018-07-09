@@ -147,8 +147,8 @@ case "$VERB" in
 		case "$VOLUME_MANAGER" in
 			pactl)
 				pacmd list-sinks |
-				awk '/^\s+name: /{indefault = $2 == "<'$PACTL_SINK'>"}
-				    /^\s+volume: / && indefault {print $5; exit}'
+				awk '/^[^a-zA-Z0-9]+name: /{indefault = $2 == "<'$PACTL_SINK'>"}
+				    /^[^a-zA-Z0-9]+volume: / && indefault {print $5; exit}'
 				;;
 			*)
 				echo "ERROR: no known volume manager available"
