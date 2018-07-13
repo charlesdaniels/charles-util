@@ -235,7 +235,7 @@ def main():
             help="Force a fresh search for Quartus installation" +
             "directories. This implies --purge. Note that the search " +
             "operation can take a long time, as it traverses the entire" +
-            " filesystem in it's search.")
+            " filesystem in its search.")
 
     action.add_argument("--list", "-l", default=False, action="store_true",
             help="List installation directories. If the cache is empty, " +
