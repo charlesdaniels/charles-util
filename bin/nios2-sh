@@ -10,6 +10,9 @@
 
 # .ENDOC
 
+set -e
+set -u
+
 CMDSHELL="nios2_command_shell.sh"
 
 if [ ! -x "$(which nios2-search)" ] ; then
@@ -30,8 +33,10 @@ if [ $SEARCHSTATUS -ne 0 ] ; then
 	exit 1
 fi
 
-TARGET_SHELL=zsh
+TARGET_SHELL="$(finger "$(whoami)" | grep 'Shell' | cut -d: -f3)"
+echo "Detected login shell: $TARGET_SHELL"
 if [ ! -x "$(which $TARGET_SHELL)" ] ; then
+	echo "Could not find login shell, defaulting to bash"
 	TARGET_SHELL=bash
 fi
 
@@ -42,6 +47,20 @@ if [ -e "$HOME/.altera_license_setup" ] ; then
 	echo "executing license setup file... "
 	. "$HOME/.altera_license_setup"
 fi
+
+NEW_LIB_PATH="$EDSDIR/../quartus/linux64"
+
+if [ ! -d "$NEW_LIB_PATH" ] ; then
+	echo "WARNING: '$NEW_LIB_PATH' does not exist, are you sure this is a valid Quartus install?"
+else
+	echo "Adding $NEW_LIB_PATH to LD_LIBRARY_PATH"
+	if [ -z "$NEW_LIB_PATH" ] ; then
+		export LD_LIBRARY_PATH="$NEW_LIB_PATH:$LD_LIBRARY_PATH"
+	else
+		export LD_LIBRARY_PATH="$NEW_LIB_PATH"
+	fi
+fi
+
 
 "$EDSDIR/$CMDSHELL" $TARGET_SHELL -i
 exit $?
