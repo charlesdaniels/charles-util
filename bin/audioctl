@@ -65,6 +65,11 @@ if [ -x "$(which cmus)" ] ; then
 	HAS_CMUS="YES"
 fi
 
+HAS_MPC="NO"
+if [ -x "$(which mpc)" ] ; then
+	HAS_MPC="YES"
+fi
+
 if [ "$VOLUME_MANAGER" = "pactl" ] ; then
 	PACTL_SINK="$(pacmd stat | \
 		awk -F": " '/^Default sink name: /{print $2}')"
@@ -161,6 +166,9 @@ case "$VERB" in
 		send_notification "playing music"
 		if [ "$HAS_CMUS" = "YES" ] ; then
 			run_cmus_cmd --play
+		fi
+
+		if [ "$HAS_MPC" = "YES" ] ; then
 			run_mpc_cmd play
 		fi
 		;;
@@ -168,6 +176,9 @@ case "$VERB" in
 		send_notification "pausing music"
 		if [ "$HAS_CMUS" = "YES" ] ; then
 			run_cmus_cmd --pause
+		fi
+
+		if [ "$HAS_MPC" = "YES" ] ; then
 			run_mpc_cmd pause
 		fi
 		;;
@@ -175,6 +186,9 @@ case "$VERB" in
 		send_notification "toggled play/pause"
 		if [ "$HAS_CMUS" = "YES" ] ; then
 			run_cmus_cmd --pause
+		fi
+
+		if [ "$HAS_MPC" = "YES" ] ; then
 			run_mpc_cmd toggle
 		fi
 		;;
@@ -182,6 +196,9 @@ case "$VERB" in
 		send_notification "skipping track"
 		if [ "$HAS_CMUS" = "YES" ] ; then
 			run_cmus_cmd --next
+		fi
+
+		if [ "$HAS_MPC" = "YES" ] ; then
 			run_mpc_cmd next
 		fi
 		;;
@@ -189,6 +206,9 @@ case "$VERB" in
 		send_notification "previous track"
 		if [ "$HAS_CMUS" = "YES" ] ; then
 			run_cmus_cmd --prev
+		fi
+
+		if [ "$HAS_MPC" = "YES" ] ; then
 			run_mpc_cmd prev
 		fi
 		;;
