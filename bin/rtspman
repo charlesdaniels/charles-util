@@ -1,0 +1,222 @@
+#!/bin/sh
+
+# .SCRIPTDOC
+#
+# A script for recording RTSP streams, and deleting old video files when
+# the storage directory exceeds allowed storage size.
+
+# rstpman is configured using a file named rstpman.cfg, which is a POSIX sh
+# fragment, searched for in the following directories in descending order of
+# preference:
+
+# * path specified in the first argument of this program
+# * ``/etc/``
+# * ``/usr/local/etc/``
+# * ``/etc/default/``
+# * ``$HOME/.config``
+
+# This file must specify **all** of the following keys:
+#
+# * ``SEGMENT_LENGTH`` - desired duration of each segment in seconds
+# * ``SEGMENT_OVERLAP`` - desired number of seconds of overlap between
+#   existing segments (the total length of each segment is SEGMENT_LENGTH +
+#   SEGMENT_OVERLAP)
+# * ``VIDEO_DIR`` - directory to store recorded video files
+# * ``MAX_STORAGE`` - maximum amount of storage used before old files are
+#   cleaned up, specified as an integer number of megabytes.
+# * ``DEBUG`` - specify 'YES' to enable debug output
+# * ``RTSP_HOST`` - RTSP host
+# * ``RTSP_PATH`` - everything to the right of the first ``/`` (including it)
+# * ``RTSP_USER`` - RTSP username
+# * ``RTSP_PASS`` - rstp password
+# * ``VIDEO_PREFIX`` - prefix which is included before the timestamp in video
+#   file names.
+# * ``VIDEO_EXTENSION`` - extension to use for video files
+# * ``VCODEC`` - video codec (``copy`` is suggested)
+# * ``ACODEC`` - audio codec (``copy`` is suggested)
+# * ``FRAMERATE`` - desired frames per seconds
+# * ``SCALE`` - desired scale in ``H:W`` format (use ``-1`` for either to
+#   maintain aspect ratio from the other). Use ``-1:-1`` for no rescaling.
+# * ``BITRATE`` - specify desired bitrate
+
+# Note that the suggested approach to handling multiple different streams is to
+# maintain a separate video directory for each, and to use a separate
+# configuration file for each. If you choose to use a unified video directory,
+# keep in mind that when cleaning videos (when the directory runs out of
+# space), an alphanumeric sort is used to identify the oldest video files.
+
+# .AUTHOR
+#
+# Charles Daniels
+#
+# .LICENSE
+#
+# Copyright (c) 2018, Charles Daniels
+# All rights reserved.
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+
+# 1. Redistributions of source code must retain the above copyright notice,
+# this list of conditions and the following disclaimer.
+
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+
+# 3. Neither the name of the copyright holder nor the names of its contributors
+# may be used to endorse or promote products derived from this software without
+# specific prior written permission.
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+# .ENDOC
+
+set -e
+set -u
+
+CONFIG_FILE_NAME="rtspman.cfg"
+CONFIG_FILE=""
+
+write_log () {
+	printf '[%s][%s]: %s\n' "$(date)" "$1" "$2" > /dev/stderr
+}
+
+write_debug () {
+	if [ "$DEBUG" = "YES" ] ; then
+		write_log "DEBUG" "$@"
+	fi
+}
+
+write_info () {
+	write_log "INFO " "$@"
+}
+
+write_error () {
+	write_log "ERROR" "$@"
+}
+
+write_warn () {
+	write_log "WARN " "$@"
+}
+
+search_config () {
+	if [ "$CONFIG_FILE" = "" ] ; then
+		SEARCH_PATH="$1/$CONFIG_FILE_NAME"
+		if [ -e "$SEARCH_PATH" ] ; then
+			CONFIG_FILE="$SEARCH_PATH"
+		fi
+	fi
+}
+
+assert_cmd () {
+	write_debug "ensuring that command $1 present in PATH"
+	if [ ! -x "$(which "$1")" ] ; then
+		write_error "command $1 not found in PATH!"
+		exit 1
+	fi
+}
+
+if [ $# -ge 1 ] ; then
+	search_config "$1"
+fi
+search_config '/etc/'
+search_config '/usr/local/etc/'
+search_config '/etc/default/'
+search_config "$HOME/.config/"
+
+if [ ! -e "$CONFIG_FILE" ] ; then
+	echo 'FATAL: failed to locate config file' > /dev/stderr
+	exit 1
+fi
+
+. "$CONFIG_FILE"
+
+write_debug "selected config file '$CONFIG_FILE'"
+
+
+assert_cmd bc
+assert_cmd ffmpeg
+
+PIDFILE="$VIDEO_DIR/rtspman.pid"
+if [ -f "$PIDFILE" ] ; then
+	if ps aux | grep "$(cat $PIDFILE)" | grep -v grep ; then
+		write_error "already running"
+		exit 1
+	else
+		write_warn "found pidfile '$PIDFILE', but not pid"
+		rm -f "$PIDFILE"
+	fi
+fi
+echo "$$" > "$PIDFILE"
+
+RTSP_URL="rtsp://$RTSP_USER:$RTSP_PASS@$RTSP_HOST$RTSP_PATH"
+write_debug "construct RTSP URL '$RTSP_URL'"
+
+if [ ! -d "$VIDEO_DIR" ] ; then
+	write_warn "VIDEO_DIR '$VIDEO_DIR' does not exist, creating it"
+	mkdir -p "$VIDEO_DIR"
+fi
+
+if [ ! -d "$VIDEO_DIR" ] ; then
+	write_error "VIDEO_DIR '$VIDEO_DIR' does not exist, and could not be created"
+	exit 1
+fi
+
+TOTAL_DURATION="$(echo "$SEGMENT_LENGTH + $SEGMENT_OVERLAP" | bc)"
+write_debug "total video duration: $TOTAL_DURATION seconds"
+
+while true ; do
+	# reload config file in case it changed
+	. "$CONFIG_FILE"
+
+	VIDEO_TIMESTAMP="$(date +"%Y-%m-%d_%H-%M-%S")"
+	VIDEO_NAME="$VIDEO_PREFIX$VIDEO_TIMESTAMP"
+	VIDEO_PATH="$VIDEO_DIR/$VIDEO_NAME.$VIDEO_EXTENSION"
+	write_debug="VIDEO_PATH=$VIDEO_PATH"
+
+	# convert max storage to bytes
+	MAX_STORAGE="$(echo "$MAX_STORAGE * 1024 * 1024" | bc)"
+	write_debug "MAX_STORAGE=$MAX_STORAGE bytes"
+
+	# calculate current usage
+	STORAGE_USAGE="$(du --bytes "$VIDEO_DIR" | awk '{print($1);}')"
+	write_debug "current storage usage is $STORAGE_USAGE bytes"
+
+	# clean up if needed
+	if [ $STORAGE_USAGE -gt $MAX_STORAGE ] ; then
+		write_info "storage quota exceeded, cleaning up"
+		TARGET_FILE="$(ls -1 "$VIDEO_DIR"/*.$VIDEO_EXTENSION | sort -r | tail -n 1)"
+		write_info "cleaning file '$TARGET_FILE'"
+		rm -f "$VIDEO_DIR/$TARGET_FILE"
+	fi
+
+	# spin off job to record video
+	write_info "begin recording to '$VIDEO_PATH' for $TOTAL_DURATION seconds"
+	ffmpeg -i "$RTSP_URL" \
+		-acodec $ACODEC \
+		-vcodec $VCODEC \
+		-t $TOTAL_DURATION \
+		-segment_format mp4 \
+		-r $FRAMERATE \
+		-loglevel fatal \
+		-vf scale=$SCALE \
+		-b:v $BITRATE \
+		"$VIDEO_PATH" &
+	write_info "spawned PID $!"
+
+	# wait to kick off the next recording session
+	write_debug "sleeping for $SEGMENT_LENGTH seconds... "
+	sleep $SEGMENT_LENGTH
+	write_debug "woke back up"
+done
