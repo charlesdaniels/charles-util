@@ -35,8 +35,6 @@
 # * ``VCODEC`` - video codec (``copy`` is suggested)
 # * ``ACODEC`` - audio codec (``copy`` is suggested)
 # * ``FRAMERATE`` - desired frames per seconds
-# * ``SCALE`` - desired scale in ``H:W`` format (use ``-1`` for either to
-#   maintain aspect ratio from the other). Use ``-1:-1`` for no rescaling.
 # * ``BITRATE`` - specify desired bitrate
 
 # Note that the suggested approach to handling multiple different streams is to
@@ -210,7 +208,6 @@ while true ; do
 		-segment_format mp4 \
 		-r $FRAMERATE \
 		-loglevel fatal \
-		-vf scale=$SCALE \
 		-b:v $BITRATE \
 		"$VIDEO_PATH" &
 	write_info "spawned PID $!"
