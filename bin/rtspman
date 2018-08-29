@@ -43,6 +43,11 @@
 # keep in mind that when cleaning videos (when the directory runs out of
 # space), an alphanumeric sort is used to identify the oldest video files.
 
+# Also note that this script works by first recording a "raw" video stream
+# which is a direct copy of the RTSP stream. Once a given stream is finished,
+# it then re-encodes it using the settings specified and deletes the "raw"
+# copy.
+
 # .AUTHOR
 #
 # Charles Daniels
@@ -180,7 +185,7 @@ while true ; do
 
 	VIDEO_TIMESTAMP="$(date +"%Y-%m-%d_%H-%M-%S")"
 	VIDEO_NAME="$VIDEO_PREFIX$VIDEO_TIMESTAMP"
-	VIDEO_PATH="$VIDEO_DIR/$VIDEO_NAME.$VIDEO_EXTENSION"
+	VIDEO_PATH="$VIDEO_DIR/$VIDEO_NAME.raw.$VIDEO_EXTENSION"
 	write_debug="VIDEO_PATH=$VIDEO_PATH"
 
 	# convert max storage to bytes
@@ -199,18 +204,45 @@ while true ; do
 		rm -f "$VIDEO_DIR/$TARGET_FILE"
 	fi
 
+	# spin off job to re-encode the oldest raw video, note that this comes
+	# before we start the next encode, as we don't want the previous
+	# encode's raw video to be caught by this code.
+	LAST_RAW_FILE="$(ls -1 "$VIDEO_DIR"/*.raw.$VIDEO_EXTENSION 2>/dev/null | sort -r | tail -n 1)"
+	if [ -e "$LAST_RAW_FILE" ] ; then
+		# there may be cases where the above returns no results, so
+		# we only proceed if this file exists.
+
+		OUTPUT_FILE="$VIDEO_DIR/$(basename "$LAST_RAW_FILE" .raw.$VIDEO_EXTENSION).$VIDEO_EXTENSION"
+
+		write_info "re-encoding '$LAST_RAW_FILE' to '$OUTPUT_FILE'"
+
+		( sleep $SEGMENT_OVERLAP && ffmpeg -i "$LAST_RAW_FILE" \
+			-acodec $ACODEC \
+			-vcodec $VCODEC \
+			-t $TOTAL_DURATION \
+			-segment_format mp4 \
+			-r $FRAMERATE \
+			-loglevel fatal \
+			-b:v $BITRATE \
+			"$OUTPUT_FILE" && rm -f "$LAST_RAW_FILE" ) &
+		write_info "spawned PID $!"
+
+	else
+		write_info "no raw videos ready for re-encoding"
+	fi
+
 	# spin off job to record video
 	write_info "begin recording to '$VIDEO_PATH' for $TOTAL_DURATION seconds"
 	ffmpeg -i "$RTSP_URL" \
-		-acodec $ACODEC \
-		-vcodec $VCODEC \
+		-acodec copy \
+		-vcodec copy \
 		-t $TOTAL_DURATION \
 		-segment_format mp4 \
-		-r $FRAMERATE \
 		-loglevel fatal \
-		-b:v $BITRATE \
 		"$VIDEO_PATH" &
 	write_info "spawned PID $!"
+
+
 
 	# wait to kick off the next recording session
 	write_debug "sleeping for $SEGMENT_LENGTH seconds... "
