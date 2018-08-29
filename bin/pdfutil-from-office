@@ -52,9 +52,9 @@
 
 LO_COMMAND=""
 
-if check-command-exists libreoffice ; then
+if [ -x "$(which libreoffice)" ] ; then
   LO_COMMAND=libreoffice
-elif check-command-exists soffice ; then
+elif [ -x "$(which soffice)" ] ; then
   LO_COMMAND=soffice
 elif [ -f /Applications/LibreOffice.app/Contents/MacOS/soffice ] ; then
   LO_COMMAND="/Applications/LibreOffice.app/Contents/MacOS/soffice"
