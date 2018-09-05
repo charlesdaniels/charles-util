@@ -1,0 +1,182 @@
+#!/usr/bin/env python3
+
+#  Copyright (c) 2018, Charles Daniels
+#  All rights reserved.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are met:
+#
+#  1. Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+#
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+#  3. Neither the name of the copyright holder nor the names of its
+#     contributors may be used to endorse or promote products derived from
+#     this software without specific prior written permission.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#  POSSIBILITY OF SUCH DAMAGE.
+
+import argparse
+import sys
+
+descr = """
+
+A tool for re-ordering input records in an intuitive way. Input records are
+ordered into groups of the same size as the spec (a spec of size 3 would mean
+groups of 3). Each such group is re-ordered according to the spec.  The spec is
+a comma delimited list of integers which act as subscripts into the group, such
+that an input of 'a b c d' with a spec of '1,1,2,2' would produce as output 'b
+b c c', and the same input with a spec of '3,2,1,0' would produce 'd c b a'.
+This program was inspired by the 'swizzle' operation in the game EXAPUNKS.
+If the number of records of input is not a multiple of group size, then any
+references to non-existent indices in the spec are simply ignored.
+"""
+
+# https://stackoverflow.com/questions/19600475/how-to-read-records-terminated-by-custom-separator-from-file-in-python
+def delimited(fp, delimiter='\n', bufsize=4096):
+    buf = ''
+    while True:
+        newbuf = fp.read(bufsize)
+        if not newbuf:
+            yield buf
+            return
+        buf += newbuf
+        lines = buf.split(delimiter)
+        for line in lines[:-1]:
+            yield line
+        buf = lines[-1]
+
+def init_group(groupsize):
+    # this guarantees the group always has at least groupsize many elements,
+    # even if they are empty.
+    return list([None for x in range(groupsize)])
+
+def swizzle(input_fp, output_fp, rs, spec, record_strip=True):
+    groupsize = len(spec)
+    group = init_group(groupsize)
+
+    # ensure the subscripts in the spec are valid
+    for element in spec:
+        if element >= groupsize:
+            raise IndexError("invalid spec subscript {}".format(element))
+
+    index = 0
+
+    # the write buffer allows us to avoid writing trailing rs instances
+    write_buf = ""
+    for element in delimited(input_fp, rs):
+        if record_strip:
+            element = element.strip()
+
+        # we reached the end of a group
+        if index >= groupsize:
+            for output_index in range(groupsize):
+                # this is the magic that makes the swizzle happen
+                write_buf += (group[spec[output_index]])
+
+                # write out the record separator too
+                if output_index < groupsize:
+                    # but only if it's not the last element
+                    write_buf += rs
+
+
+            group = init_group(groupsize)
+            index = 0
+            # prevent rs from appearing at the end of the output
+            write_buf = write_buf[:-len(rs)]
+            # prevent missing rs
+            output_fp.write(write_buf)
+            write_buf = rs
+
+        group[index] = element
+        index += 1
+
+    # clear out any remaining elements in the group
+    if index >= 1:
+        for output_index in range(groupsize):
+            if group[spec[output_index]] is None:
+                continue
+
+            write_buf += (group[spec[output_index]])
+            write_buf += rs
+
+    # strip trailing rs instance
+    write_buf = write_buf[:-len(rs)]
+    output_fp.write(write_buf)
+
+def main():
+    parser = argparse.ArgumentParser(description=descr)
+
+    parser.add_argument("--rs", "-r", default="\n", type=str,
+            help="Override record seperator. (default: newline)")
+
+    parser.add_argument("--input", "-i", default=sys.stdin,
+            help="Specify file to read records from (default: standard in)")
+
+    parser.add_argument("--spec", "-s", required=True,
+            help="Specify the spec (i.e. 0,1,2,3)")
+
+    parser.add_argument("--output", "-o", default=sys.stdout,
+            help="Specify a file to write the results to (default: standard out")
+
+    parser.add_argument("--onempty", "-n", default=b'',
+            help="Override the filler character written in the last group " +
+            "when the input record count is not a multiple of the group size" +
+            ". (defaut: empty string)")
+
+    parser.add_argument("--no_strip", "-N", action="store_true", default=False,
+            help="Do not strip anything from the input. By default, .strip()" +
+            "is called on each record of input.")
+
+    args = parser.parse_args()
+
+    input_fp = args.input
+    if args.input is not sys.stdin:
+        try:
+            input_fp = open(args.input, 'r')
+        except Exception as e:
+            sys.stderr.write("ERROR: failed to open input file: {}\n".format(e))
+            exit(1)
+
+    output_fp = args.output
+    if args.output is not sys.stdout:
+        try:
+            output_fp = open(args.output, 'w')
+        except Exception as e:
+            sys.stderr.write("ERROR: failed to open output file: {}\n".format(e))
+            exit(1)
+
+    # parse the spec
+    spec = None
+    try:
+        spec = list([int(x) for x in args.spec.split(',')])
+    except Exception as e:
+        sys.stderr.write("ERROR: invalid spec: {}\n".format(e))
+
+    # perform the swizzle
+    try:
+        swizzle(input_fp, output_fp, args.rs, spec, not args.no_strip)
+    except Exception as e:
+        sys.stderr.write("ERROR: encountered exception while swizzling: {}\n".format(e))
+        exit(1)
+
+    # clean up
+    input_fp.close()
+    output_fp.close()
+
+
+if __name__ == "__main__":
+    main()
