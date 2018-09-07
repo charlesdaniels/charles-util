@@ -78,6 +78,10 @@ def swizzle(input_fp, output_fp, rs, spec, record_strip=True):
     # the write buffer allows us to avoid writing trailing rs instances
     write_buf = ""
     for element in delimited(input_fp, rs):
+        if element == '':
+            # catch an edge case in delimited()
+            continue
+
         if record_strip:
             element = element.strip()
 
@@ -105,7 +109,7 @@ def swizzle(input_fp, output_fp, rs, spec, record_strip=True):
         index += 1
 
     # clear out any remaining elements in the group
-    if index >= 1:
+    if index > 1:
         for output_index in range(groupsize):
             if group[spec[output_index]] is None:
                 continue
