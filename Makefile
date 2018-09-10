@@ -29,7 +29,7 @@ install: $(BIN_DIR) $(MAN_DIR) $(BIN_INSTALL_DIR) $(MAN_INSTALL_DIR) generate
 	cp -r "$(MAN_DIR)"/* "$(MAN_INSTALL_DIR)/"
 
 generate: $(BIN_DIR) $(MAN_DIR) $(BIN_INSTALL_DIR) $(MAN_INSTALL_DIR)
-	for prog in src/* ; do make BIN_DIR="$(BIN_DIR)" MAN_DIR="$(MAN_DIR)" -C "$$prog" generate ; done
+	for prog in src/* ; do make BIN_DIR="$(BIN_DIR)" MAN_DIR="$(MAN_DIR)" -C "$$prog" generate ; if [ $$? -ne 0 ] ; then break ; fi  ; done
 
 clean:
 	for prog in src/* ; do make BIN_DIR="$(BIN_DIR)" MAN_DIR="$(MAN_DIR)" -C "$$prog" clean ; done

@@ -140,7 +140,3 @@ IFSIZE=$(du -h "$INPUT_FILE" | cut -f 1)
 OFSIZE=$(du -h "$OUTPUT_FILE" | cut -f 1)
 echo "Input file size: $IFSIZE"
 echo "Output file size: $OFSIZE"
-
-
-
-
