@@ -1,0 +1,69 @@
+.TH COLORTOOL "1" "##DATE##" "colortool ##VERSION##" "User Commands"
+
+.SH NAME
+colortool \- manual page for colortool ##VERSION##
+
+.SH SYNOPSIS
+usage: colortool [\-h] [\-\-version] [\-\-color COLOR] [\-\-output_hex]
+[\-\-output_rgb] [\-\-display] [\-\-mask MASK] [\-\-filter FILTER]
+
+.SH DESCRIPTION
+.PP
+This script can be used to interact with colors in various formats and types,
+including converting from RGB to HEX color and vice\-versa, and applying masks
+and/or filters. This script is intended to be useful in conjunction with other
+scripts that need to interact with HEX or RGB colors.
+.SS "optional arguments:"
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+show this help message and exit
+.TP
+\fB\-\-version\fR
+show program's version number and exit
+.TP
+\fB\-\-color\fR COLOR, \fB\-c\fR COLOR
+Input color, infer format.
+.TP
+\fB\-\-output_hex\fR, \fB\-x\fR
+Display input color in HEX format to standard out
+.TP
+\fB\-\-output_rgb\fR, \fB\-r\fR
+Display input color in RGB format to standard out
+.TP
+\fB\-\-display\fR, \fB\-d\fR
+Display color using a graphical window. Requires Xorg
+and Tk. Press any key to dismiss the window.
+.TP
+\fB\-\-mask\fR MASK, \fB\-m\fR MASK
+Color mask in the format: c:n where c is one of {r, g,
+b} identifying the channel, and n is an 8\-digit binary
+number. The mask is applied as a bitwise OR. Masks can
+be specified for multiple channels by comma
+delimiting, for example: c1:n1,c2:n2
+.TP
+\fB\-\-filter\fR FILTER, \fB\-f\fR FILTER
+Filter (bitwise AND). Uses the same syntax as \fB\-\-mask\fR.
+Filters are applied after masks.
+
+.SH EXAMPLES
+
+.PP
+$ colortool --color 123,45,78 -x
+
+.IP
+#7b2d4e
+
+.PP
+$ colortool --color #7b2d4e -r
+
+.IP
+123,45,78
+
+
+.SH CHANGELOG
+
+.IP 0.0.1
+Initial version.
+
+.SH COPYRIGHT
+(c) 2018 Charles A. Daniels, All Rights Reserved
