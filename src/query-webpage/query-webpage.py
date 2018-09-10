@@ -28,6 +28,8 @@
 #  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #  POSSIBILITY OF SUCH DAMAGE.
 
+version = "0.0.1"
+
 descr = """Script to download the contents of a webpage, then print the results
 of a specified xPath query and exit. Use cases primarily include extracting
 bits of information readily located by xPath, such as counters or statuses.
@@ -38,7 +40,7 @@ spoofing. Please be considerate of other people's servers and use a more
 sophisticated tool and proper authentication (i.e. OAuth) if you plan to make
 higher-volume queries against other peoples sites. If you use this tool to send
 hundreds of requests per minute while spoofing your use agent to googlebot, you
-will probably get IP banned from whatever you are doing, and are alsovery
+will probably get IP banned from whatever you are doing, and are also very
 likely  a bad person. In short, please be nice when using this tool."""
 
 import argparse
@@ -111,6 +113,8 @@ parser.add_argument("--common_user_agent", "-A", default=None,
                     help="Select a user agent from a list of common ones. " +
                     "Valid options are: "  + common_user_agent_msg +
                     ". This overrides any value given via --user_agent")
+
+parser.add_argument('--version', action='version', version=version)
 
 args = parser.parse_args()
 
