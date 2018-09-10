@@ -38,11 +38,6 @@ Specify the spec (i.e. 0,1,2,3)
 Specify a file to write the results to (default:
 standard out
 .TP
-\fB\-\-onempty\fR ONEMPTY, \fB\-n\fR ONEMPTY
-Override the filler character written in the last
-group when the input record count is not a multiple of
-the group size. (defaut: empty string)
-.TP
 \fB\-\-no_strip\fR, \fB\-N\fR
 Do not strip anything from the input. By default,
 \&.strip()is called on each record of input.
@@ -100,6 +95,9 @@ not be found, swizzle was born.
 
 .IP 0.0.1
 Initial version.
+
+.IP 0.0.2
+Remove unused --onempty flag, explicitly use sys.exit instead of exit.
 
 .SH COPYRIGHT
 (c) Charles A. Daniels 2018, All Rights Reserved

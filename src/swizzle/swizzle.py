@@ -32,7 +32,7 @@
 import argparse
 import sys
 
-version = "0.0.1"
+version = "0.0.2"
 
 descr = """
 
@@ -138,11 +138,6 @@ def main():
     parser.add_argument("--output", "-o", default=sys.stdout,
             help="Specify a file to write the results to (default: standard out")
 
-    parser.add_argument("--onempty", "-n", default=b'',
-            help="Override the filler character written in the last group " +
-            "when the input record count is not a multiple of the group size" +
-            ". (defaut: empty string)")
-
     parser.add_argument("--no_strip", "-N", action="store_true", default=False,
             help="Do not strip anything from the input. By default, .strip()" +
             "is called on each record of input.")
@@ -157,7 +152,7 @@ def main():
             input_fp = open(args.input, 'r')
         except Exception as e:
             sys.stderr.write("ERROR: failed to open input file: {}\n".format(e))
-            exit(1)
+            sys.exit(1)
 
     output_fp = args.output
     if args.output is not sys.stdout:
@@ -165,7 +160,7 @@ def main():
             output_fp = open(args.output, 'w')
         except Exception as e:
             sys.stderr.write("ERROR: failed to open output file: {}\n".format(e))
-            exit(1)
+            sys.exit(1)
 
     # parse the spec
     spec = None
@@ -179,7 +174,7 @@ def main():
         swizzle(input_fp, output_fp, args.rs, spec, not args.no_strip)
     except Exception as e:
         sys.stderr.write("ERROR: encountered exception while swizzling: {}\n".format(e))
-        exit(1)
+        sys.exit(1)
 
     # clean up
     input_fp.close()
