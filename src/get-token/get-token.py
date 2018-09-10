@@ -1,28 +1,15 @@
 #!/usr/bin/env python3
 
-# .SCRIPTDOC
 
 descr = """
-# This script is used to interact with API tokens on disk in a programmatic
-# way. This is specifically useful for writing scripts that need to access API
-# tokens. The value of this approach is that all tokens are aggregated into a
-# single file that can be readily transferred between systems with a single
-# ``rsync`` command.
-""".replace('# ', ' ')
+This script is used to interact with API tokens on disk in a programmatic
+way. This is specifically useful for writing scripts that need to access API
+tokens. The value of this approach is that all tokens are aggregated into a
+single file that can be readily transferred between systems with a single
+rsync command.
+"""
 
-# The token store is not intended to be modified directly, but is stored in
-# YAML format, and it resides in a location configured via --tokenstore.
-
-# .SYNTAX
-
-# Run this script with the ``--help`` parameter for usage information.
-
-# .AUTHOR
-
-# Charles Daniels
-
-
-# .LICENSE
+version = "0.0.1"
 
 # Copyright 2018 Charles Daniels
 
@@ -51,8 +38,6 @@ descr = """
 #  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #  POSSIBILITY OF SUCH DAMAGE.
-
-# .ENDOC
 
 import os
 import sys
@@ -85,6 +70,8 @@ def main():
 
     parser.add_argument("--list", "-l", default=False, action="store_true",
                         help="List available token names.")
+
+    parser.add_argument('--version', action='version', version=version)
 
     args = parser.parse_args()
 
