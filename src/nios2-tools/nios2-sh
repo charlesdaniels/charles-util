@@ -31,14 +31,16 @@
 VERSION="0.0.1"
 
 # handle help and version
-if [ $1 = "version" ] ; then
-	echo $VERSION
-	exit 0
-fi
+if [ $# -gt 0 ] ; then
+	if [ $1 = "version" ] ; then
+		echo $VERSION
+		exit 0
+	fi
 
-if [ $1 = "help" ] ; then
-	echo "$(basename "$0") [quartus version | version | help]"
-	exit 0
+	if [ $1 = "help" ] ; then
+		echo "$(basename "$0") [quartus version | version | help]"
+		exit 0
+	fi
 fi
 
 set -e

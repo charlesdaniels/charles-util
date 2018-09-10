@@ -245,12 +245,12 @@ def get(query=""):
         sys.stderr.write("FATAL: no installation directory found")
         sys.stderr.write(" matching version query '{}'.\n".format(query))
         sys.stderr.flush()
-        exit(1)
+        sys.exit(1)
     else:
         write_verbose("selected result: {}".format(result))
         sys.stdout.write(result["path"])
         sys.stdout.flush()
-        exit(0)
+        sys.exit(0)
 
 def main():
 
