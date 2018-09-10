@@ -9,7 +9,7 @@ generate: $(BIN_DIR) $(MAN_DIR) dist/swizzle swizzle.1
 dist/swizzle: swizzle.py
 	pyinstaller --onefile swizzle.py
 
-swizzle.1: swizzle.1.template
+swizzle.1: swizzle.1.tr
 	sed 's/##DATE##/$(DATE)/g' < $< | sed 's/##VERSION##/$(VERSION)/g' > $@
 
 clean:
