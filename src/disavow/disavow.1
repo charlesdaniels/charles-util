@@ -1,0 +1,56 @@
+.TH DISAVOW 1 "September 2018" "disavow " "User Commands"
+
+.SH NAME
+.PP
+disavow - run processes in the background
+
+.SH SYNOPSIS
+.PP
+.B disavow
+[-i <stdin>] [-o <stdout>] [-e <stderr>] [-v] [-V] [-p] [cmd]
+
+.SH DESCRIPTION
+.B disavow
+executes a provided shell command as a background process (detached from the
+interactive terminal session). This is highly useful when launching GUI
+programs from a shell, as it allows the terminal window or shell session to be
+closed without also halting the program.
+.B disavow
+also features facilities to pass streams into and out of the backgrounded
+process. While the same functionality could be accomplished with standard POSIX
+job control mechanisms (i.e. disown),
+.B disavow
+offers an easier to use and understand interface.
+
+.SH OPTIONS
+
+.IP "-i PATH, --stdin PATH"
+Override the standard input stream of the spawned process. If not specified,
+/dev/null is used.
+
+.IP "-o PATH, --stdout PATH"
+Override the standard output stream of the spawned process. If not specified,
+/dev/null is used.
+
+.IP "-e PATH, --stderr PATH"
+Override the standard error stream of the spawned process. If not specified,
+/dev/null is used.
+
+.IP "-v, --verbose"
+Display verbose output.
+
+.IP "--printpid, -p"
+Print the PID of the spawned process after it is detached.
+
+.IP "-V, --version"
+Print the version and exit.
+
+.IP "-h, --help"
+Print the synopsis and exit.
+
+.SH CHANGELOG
+.IP 0.0.1
+Initial version.
+
+.SH COPYRIGHT
+(c) 2018 Charles A. Daniels

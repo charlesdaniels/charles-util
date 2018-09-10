@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # .SCRIPTDOC
 
@@ -74,6 +74,16 @@
 
 # .ENDOC
 
+if [ -z "$BASH" ] ; then
+	echo "ERROR: $(basename "$0") must be run in Bash" > /dev/stderr
+	exit 1
+fi
+
+if [ $BASH_VERSINFO -lt 4 ] ; then
+	echo "ERROR: Bash version 4.0 or better required" > /dev/stderr
+	exit 1
+fi
+
 PROC_STDIN=/dev/null
 PROC_STDOUT=/dev/null
 PROC_STDERR=/dev/null
@@ -84,6 +94,14 @@ PREV_TOKEN=""
 PRINT_PID=0
 STOP_PARSING=0
 
+VERSION="0.0.1"
+
+# display usage if no parameters provided
+if [ $# -lt 1 ] ; then
+	$0 --help
+	exit 1
+fi
+
 # The " " makes sure that we always see every PREV_TOKEN. Note that this method
 # for parsing argv does not support merged flags (i.e. -abc vs -a -b -c).
 # DROP_TOKEN is used to signal *) that it should ignore the next token that
@@ -93,24 +111,43 @@ for TOKEN in $* " "; do
 		PROC_CMD="$PROC_CMD $PREV_TOKEN"
 	else
 		case "$PREV_TOKEN" in
+			"--stdin")
+				;&
 			"-i")
 				PROC_STDIN="$TOKEN"
 				DROP_TOKEN=1
 				;;
+			"--stdout")
+				;&
 			"-o")
 				PROC_STDOUT="$TOKEN"
 				DROP_TOKEN=1
 				;;
+			"--stderr")
+				;&
 			"-e")
 				PROC_STDERR="$TOKEN"
 				DROP_TOKEN=1
 				;;
+			"--help")
+				;&
 			"-h")
-				echo "$0 [-i <stdin>] [-o <stdout>] [-e <stderr>] [-v]  [cmd]"
+				echo "$(basename "$0") [-i <stdin>] [-o <stdout>] [-e <stderr>] [-v] [-V] [-p] [cmd]"
+				exit 0
 				;;
+			"--verbose")
+				;&
 			"-v")
 				VERBOSE_MODE=1
 				;;
+			"-V")
+				;&
+			"--version")
+				echo "$VERSION"
+				exit 0
+				;;
+			"--printpid")
+				;&
 			"-p")
 				PRINT_PID=1
 				;;
