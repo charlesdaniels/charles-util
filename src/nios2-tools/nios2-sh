@@ -1,0 +1,99 @@
+#!/bin/sh
+
+# Copyright 2018 Charles Daniels
+
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are met:
+
+#  1. Redistributions of source code must retain the above copyright notice,
+#  this list of conditions and the following disclaimer.
+
+#  2. Redistributions in binary form must reproduce the above copyright notice,
+#  this list of conditions and the following disclaimer in the documentation
+#  and/or other materials provided with the distribution.
+
+#  3. Neither the name of the copyright holder nor the names of its
+#  contributors may be used to endorse or promote products derived from this
+#  software without specific prior written permission.
+
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#  POSSIBILITY OF SUCH DAMAGE.
+
+VERSION="0.0.1"
+
+# handle help and version
+if [ $1 = "version" ] ; then
+	echo $VERSION
+	exit 0
+fi
+
+if [ $1 = "help" ] ; then
+	echo "$(basename "$0") [quartus version | version | help]"
+	exit 0
+fi
+
+set -e
+set -u
+
+CMDSHELL="nios2_command_shell.sh"
+
+if [ ! -x "$(which nios2-search)" ] ; then
+	echo "FATAL: no nios2-search in PATH"
+	exit 1
+fi
+
+if [ $# -ge 1 ] ; then
+	EDSDIR=$(nios2-search --get_version $1)
+	SEARCHSTATUS=$?
+else
+	EDSDIR=$(nios2-search --get)
+	SEARCHSTATUS=$?
+fi
+
+if [ $SEARCHSTATUS -ne 0 ] ; then
+	echo "FATAL: nios2-search returned an error state"
+	exit 1
+fi
+
+TARGET_SHELL="$(finger "$(whoami)" | grep 'Shell' | cut -d: -f3)"
+echo "Detected login shell: $TARGET_SHELL"
+if [ ! -x "$(which $TARGET_SHELL)" ] ; then
+	echo "Could not find login shell, defaulting to bash"
+	TARGET_SHELL=bash
+fi
+
+echo "Launching EDS environment from $EDSDIR with shell $TARGET_SHELL"
+cat "$EDSDIR/version.txt"
+
+if [ -e "$HOME/.altera_license_setup" ] ; then
+	echo "executing license setup file... "
+	. "$HOME/.altera_license_setup"
+fi
+
+NEW_LIB_PATH="$EDSDIR/../quartus/linux64"
+
+if [ ! -d "$NEW_LIB_PATH" ] ; then
+	echo "WARNING: '$NEW_LIB_PATH' does not exist, are you sure this is a valid Quartus install?"
+else
+	echo "Adding $NEW_LIB_PATH to LD_LIBRARY_PATH"
+	if [ -z "$NEW_LIB_PATH" ] ; then
+		export LD_LIBRARY_PATH="$NEW_LIB_PATH:$LD_LIBRARY_PATH"
+	else
+		export LD_LIBRARY_PATH="$NEW_LIB_PATH"
+	fi
+fi
+
+
+"$EDSDIR/$CMDSHELL" $TARGET_SHELL -i
+exit $?
+
+
