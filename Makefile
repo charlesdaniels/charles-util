@@ -1,24 +1,36 @@
-BIN_DIR=./bin
-PREFIX=$(shell echo $$HOME)
-TARGET_SCRIPTS=$(shell ls $(BIN_DIR) | while read -r f ; do echo "$(PREFIX)/bin/$$f" ; done)
+PREFIX=$(shell echo $$HOME)/.local
+BIN_INSTALL_DIR=$(PREFIX)/bin
+MAN_INSTALL_DIR=$(PREFIX)/man
+BIN_DIR=$(shell pwd)/bin
+MAN_DIR=$(shell pwd)/man
 
 info:
-	@echo "PREFIX: $(PREFIX)"
-	@echo "TARGET_SCRIPTS: $(TARGET_SCRIPTS)"
-	@echo ""
-	@echo "To install, run 'make PREFIX=/some/prefix install'. Omit"
-	@echo "PREFIX to use ~ as the prefix (scripts install to ~/bin)."
-	@echo ""
-	@echo "To uninstall, run make PREFIX=/some/prefix uninstall"
+	@echo "PREFIX . . . . . . . . $(PREFIX)"
+	@echo "BIN_INSTALL_DIR  . . . $(BIN_INSTALL_DIR)"
+	@echo "MAN_INSTALL_DIR  . . . $(MAN_INSTALL_DIR)"
+	@echo "To install, use make install"
 
-install: $(TARGET_SCRIPTS)
+$(BIN_DIR):
+	mkdir -p "$(BIN_DIR)"
 
-uninstall:
-	rm -f $(TARGET_SCRIPTS)
+$(MAN_DIR):
+	mkdir -p "$(MAN_DIR)"
 
-$(PREFIX)/bin/%: $(BIN_DIR)/% $(PREFIX)/bin
-	cp "$<" "$@"
-	chmod +x "$@"
+$(BIN_INSTALL_DIR):
+	mkdir -p "$(BIN_INSTALL_DIR)"
 
-$(PREFIX)/bin:
-	mkdir -p "$@"
+$(MAN_INSTALL_DIR):
+	mkdir -p "$(MAN_INSTALL_DIR)"
+
+.PHONY: install generate clean
+
+install: $(BIN_DIR) $(MAN_DIR) $(BIN_INSTALL_DIR) $(MAN_INSTALL_DIR) generate
+	cp "$(BIN_DIR)"/* "$(BIN_INSTALL_DIR)/"
+	cp -r "$(MAN_DIR)"/* "$(MAN_INSTALL_DIR)/"
+
+generate: $(BIN_DIR) $(MAN_DIR) $(BIN_INSTALL_DIR) $(MAN_INSTALL_DIR)
+	for prog in src/* ; do make BIN_DIR="$(BIN_DIR)" MAN_DIR="$(MAN_DIR)" -C "$$prog" generate ; done
+
+clean:
+	for prog in src/* ; do make BIN_DIR="$(BIN_DIR)" MAN_DIR="$(MAN_DIR)" -C "$$prog" clean ; done
+	rm -rf "$(BIN_DIR)" "$(MAN_DIR)"

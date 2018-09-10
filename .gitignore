@@ -1,2 +1,6 @@
 doc/build
 doc/source/script
+*.pyc
+__pycache__
+bin
+man
