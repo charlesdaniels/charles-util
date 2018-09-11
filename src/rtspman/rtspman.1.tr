@@ -1,0 +1,133 @@
+.TH RTSPMAN 1 "##DATE##" "rtspman 0.0.1" "User Commands"
+
+.SH NAME
+.PP
+rtspman - A script for recording RTSP streams, and deleting old video files
+when the storage directory exceeds allowed storage size.
+
+.SH SYNOPSIS
+
+.B rtspman [config search]
+
+.SH OPTIONS
+
+.IP "config search"
+Specify a directory which should be searched for rtspman.cfg.
+
+.SH DESCRIPTION
+
+.B rtspman uses ffmpeg to pull down video files from a given RTSP stream and
+then save if to a "raw" copy of the output video. While processing the next
+segment of the stream, the previous segment is re-encoded with the desired
+settings. This approach was chosen because h.264 encoding from a network stream
+can cause issues when frames are dropped by the rtsp source.
+
+Whenever the storage quota of the output directory is exceeded, the oldest
+video (as determined by the collation order) is deleted.
+
+
+.SH FILES
+
+.IP rtspman.cfg
+
+.B rstpman
+is configured using a file named rstpman.cfg, which is a POSIX sh
+fragment, searched for in the following directories in descending order of
+preference:
+
+.RS
+.IP
+- path specified in "config search", if any
+
+.IP
+- /etc/
+
+.IP
+- /usr/local/etc/
+
+.IP
+- /etc/default/
+
+.IP
+- $HOME/.config
+
+.RE
+
+.IP
+This file must specify **all** of the following keys:
+
+.RS
+.IP SEGMENT_LENGTH
+desired duration of each segment in seconds
+
+.IP SEGMENT_OVERLAP
+desired number of seconds of overlap betweenw existing segments (the total
+length of each segment is SEGMENT_LENGTH + SEGMENT_OVERLAP)
+
+.IP VIDEO_DIR
+Directory to store recorded video files.
+
+.IP MAX_STORAGE
+maximum amount of storage used before old files are cleaned up, specified as an
+integer number of megabytes.
+
+.IP DEBUG
+specify 'YES' to enable debug output.
+
+.IP RTSP_HOST
+The host from which the RTSP stream originates.
+
+.IP RTSP_PATH
+Everything to the right of the first '/' (including it) in the RTSP URL.
+
+.IP RTSP_USE
+RTSP username.
+
+.IP RTSP_PAS
+RSTP password.
+
+.IP VIDEO_PREFIX
+prefix which is included before the timestamp in video file names.
+
+.IP VIDEO_EXTENSION
+Extension to use for video files.
+
+.IP VCODEC
+Video codec (for example, 'h254').
+
+.IP ACODEC
+Audio codec ('copy' is suggested).
+
+.IP FRAMERAT
+Desired frames per second.
+
+.IP BITRATE
+Desired bitrate (for example, '32k').
+
+.RE
+
+.IP rtspman.pid
+Placed in VIDEO_DIR. Stores the PID of the most recently executed instance of
+rtspman to prevent another instance from being run at the same time. This
+file should not be manually deleted or modified unless you know for sure that
+rtspman is not already running
+
+.SH NOTES
+
+Note that the suggested approach to handling multiple different streams is to
+maintain a separate video directory for each, and to use a separate
+configuration file for each. If you choose to use a unified video directory,
+keep in mind that when cleaning videos (when the directory runs out of
+space), an alphanumeric sort is used to identify the oldest video files.
+
+Also note that this script works by first recording a "raw" video stream
+which is a direct copy of the RTSP stream. Once a given stream is finished,
+it then re-encodes it using the settings specified and deletes the "raw"
+copy.
+
+.SH CHANGELOG
+.IP 0.0.1
+Initial version.
+
+.SH COPYRIGHT
+(c) 2018 Charles A. Daniels

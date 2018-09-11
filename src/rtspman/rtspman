@@ -1,59 +1,5 @@
 #!/bin/sh
 
-# .SCRIPTDOC
-#
-# A script for recording RTSP streams, and deleting old video files when
-# the storage directory exceeds allowed storage size.
-
-# rstpman is configured using a file named rstpman.cfg, which is a POSIX sh
-# fragment, searched for in the following directories in descending order of
-# preference:
-
-# * path specified in the first argument of this program
-# * ``/etc/``
-# * ``/usr/local/etc/``
-# * ``/etc/default/``
-# * ``$HOME/.config``
-
-# This file must specify **all** of the following keys:
-#
-# * ``SEGMENT_LENGTH`` - desired duration of each segment in seconds
-# * ``SEGMENT_OVERLAP`` - desired number of seconds of overlap between
-#   existing segments (the total length of each segment is SEGMENT_LENGTH +
-#   SEGMENT_OVERLAP)
-# * ``VIDEO_DIR`` - directory to store recorded video files
-# * ``MAX_STORAGE`` - maximum amount of storage used before old files are
-#   cleaned up, specified as an integer number of megabytes.
-# * ``DEBUG`` - specify 'YES' to enable debug output
-# * ``RTSP_HOST`` - RTSP host
-# * ``RTSP_PATH`` - everything to the right of the first ``/`` (including it)
-# * ``RTSP_USER`` - RTSP username
-# * ``RTSP_PASS`` - rstp password
-# * ``VIDEO_PREFIX`` - prefix which is included before the timestamp in video
-#   file names.
-# * ``VIDEO_EXTENSION`` - extension to use for video files
-# * ``VCODEC`` - video codec (``copy`` is suggested)
-# * ``ACODEC`` - audio codec (``copy`` is suggested)
-# * ``FRAMERATE`` - desired frames per seconds
-# * ``BITRATE`` - specify desired bitrate
-
-# Note that the suggested approach to handling multiple different streams is to
-# maintain a separate video directory for each, and to use a separate
-# configuration file for each. If you choose to use a unified video directory,
-# keep in mind that when cleaning videos (when the directory runs out of
-# space), an alphanumeric sort is used to identify the oldest video files.
-
-# Also note that this script works by first recording a "raw" video stream
-# which is a direct copy of the RTSP stream. Once a given stream is finished,
-# it then re-encodes it using the settings specified and deletes the "raw"
-# copy.
-
-# .AUTHOR
-#
-# Charles Daniels
-#
-# .LICENSE
-#
 # Copyright (c) 2018, Charles Daniels
 # All rights reserved.
 
@@ -82,8 +28,6 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
-# .ENDOC
 
 set -e
 set -u
