@@ -1,9 +1,34 @@
 #!/usr/bin/env python3
 
-# Copyright 2018, Charles A. Daniels
-# This software is distributed under the BSD 3-clause license. The full text
-# of this software's license may be retrieved from this URL:
-# https://github.com/charlesdaniels/dotfiles/blob/master/LICENSE
+# Copyright 2018 Charles Daniels
+
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are met:
+
+#  1. Redistributions of source code must retain the above copyright notice,
+#  this list of conditions and the following disclaimer.
+
+#  2. Redistributions in binary form must reproduce the above copyright notice,
+#  this list of conditions and the following disclaimer in the documentation
+#  and/or other materials provided with the distribution.
+
+#  3. Neither the name of the copyright holder nor the names of its
+#  contributors may be used to endorse or promote products derived from this
+#  software without specific prior written permission.
+
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#  POSSIBILITY OF SUCH DAMAGE.
+
+version = "0.0.1"
 
 import os
 import argparse
@@ -16,19 +41,24 @@ parser = argparse.ArgumentParser(description="Search for media files by" +
                                  "their tags using pytaglib.")
 parser.add_argument("--directory", "-d", default=os.getcwd(),
                     help="Root directory for search. (default: ./)")
+
 parser.add_argument("--param", "-p", default=".*",
                     help="Tag parameter to search (i.e. artist). This " +
                     "takes a Python regex, so complex queries are possible" +
                     ". (default: .*)")
+
 parser.add_argument("search_terms", nargs="*", help="Space-delimited" +
                     " search terms. Each is a Python regex. Output is" +
                     " all files where ANY search term matches.")
+
 parser.add_argument("--easy", "-e", default=None,
                     help="Search for this argument with .* on either side. " +
                     "This argument replaces search_terms")
+
 parser.add_argument("--case_sensitive", "-c", default=False,
                     action="store_true",
                     help="Asserted for case sensitive search in all regexes.")
+
 parser.add_argument("--file_list_stdin", "-l", default=False,
                     action="store_true", help="The list of files to search" +
                     "is read from standard in, rather than from a recursive " +
@@ -36,6 +66,8 @@ parser.add_argument("--file_list_stdin", "-l", default=False,
                     "standard in is not a tty. This is useful for use in " +
                     "pipelines, and can be used to create complex queries " +
                     "by chaining tagsearch instances together.")
+
+parser.add_argument('--version', action='version', version=version)
 
 args = parser.parse_args()
 

@@ -1,0 +1,58 @@
+.TH TAGSEARCH "1" "##DATE##" "tagsearch ##VERSION##" "User Commands"
+
+.SH NAME
+tagsearch - search for media files by querying their metadata tags
+
+.SH SYNOPSIS
+tagsearch [\-h] [\-\-directory DIRECTORY] [\-\-param PARAM] [\-\-easy EASY]
+[\-\-case_sensitive] [\-\-file_list_stdin] [\-\-version]
+[search_terms [search_terms ...]]
+
+.SH DESCRIPTION
+
+.PP
+Search for media files by their tags using pytaglib.
+.SS "positional arguments:"
+.TP
+search_terms
+Space\-delimited search terms. Each is a Python regex.
+Output is all files where ANY search term matches.
+.SS "optional arguments:"
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+show this help message and exit
+.TP
+\fB\-\-directory\fR DIRECTORY, \fB\-d\fR DIRECTORY
+Root directory for search. (default: ./)
+.TP
+\fB\-\-param\fR PARAM, \fB\-p\fR PARAM
+Tag parameter to search (i.e. artist). This takes a
+Python regex, so complex queries are possible.
+(default: .*)
+.TP
+\fB\-\-easy\fR EASY, \fB\-e\fR EASY
+Search for this argument with .* on either side. This
+argument replaces search_terms
+.TP
+\fB\-\-case_sensitive\fR, \fB\-c\fR
+Asserted for case sensitive search in all regexes.
+.TP
+\fB\-\-file_list_stdin\fR, \fB\-l\fR
+The list of files to searchis read from standard in,
+rather than from a recursive search of \fB\-\-directory\fR.
+This argument is implied if standard in is not a tty.
+This is useful for use in pipelines, and can be used
+to create complex queries by chaining tagsearch
+instances together.
+.TP
+\fB\-\-version\fR
+show program's version number and exit
+
+.SH CHANGELOG
+
+.IP 0.0.1
+Initial version.
+
+.SH COPYRIGHT
+
+(c) 2018 Charles A. Daniels, All Rights Reserved.
