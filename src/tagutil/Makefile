@@ -8,7 +8,7 @@ generate: $(BIN_DIR) $(MAN_DIR) tagdump.1 tagsearch.1 dist/tagdump dist/tagsearc
 	cp *.1 $(MAN_DIR)/man1/
 
 dist/%: %.py
-	pyinstaller --onefile $<
+	pyinstaller --strip --onefile $<
 
 tagdump.1: tagdump.1.tr
 	sed 's/##DATE##/$(DATE)/g' < $< | sed 's/##VERSION##/$(TAGDUMP_VERSION)/g' > $@

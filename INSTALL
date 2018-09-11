@@ -1,0 +1,15 @@
+To install, simply run
+
+make BIN_INSTALL_DIR=<somewhere> MAN_INSTALL_DIR=<somewhere> install
+
+If you are installing from a release, the appropriate build artifacts will
+already be present in ./bin and ./man. If you are installing from source, the
+build artifacts will be generated as needed.
+
+Known dependencies to install from source:
+
+* pyinstaller (Python 3.X version)
+* upx (optional but recommended)
+* groff
+* bookman
+* pandoc

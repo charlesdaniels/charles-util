@@ -1,8 +1,8 @@
 DATE=$(shell date +'%B %Y')
 VERSION=$(shell ./$(PROG).py --version)
 
-PDFUTIL_BINARIES=$(shell ls pdfutil* | grep -v '\.1$$')
-PDFUTIL_MAN=$(shell ls pdfutil* | grep -v '\.1$$' | while read -r ln ; do echo "$$ln.1" ; done)
+PDFUTIL_BINARIES=pdfutil-combine pdfutil-from-office pdfutil-scrub pdfutil-optimize
+PDFUTIL_MAN=pdfutil-combine.1 pdfutil-from-office.1 pdfutil-scrub.1 pdfutil-optimize.1
 
 generate: $(BIN_DIR) $(MAN_DIR) $(PDFUTIL_BINARIES) $(PDFUTIL_MAN)
 	cp $(PDFUTIL_BINARIES) "$(BIN_DIR)/"

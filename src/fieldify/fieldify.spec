@@ -23,7 +23,7 @@ exe = EXE(pyz,
           a.datas,
           name='fieldify',
           debug=False,
-          strip=False,
+          strip=True,
           upx=True,
           runtime_tmpdir=None,
           console=True )

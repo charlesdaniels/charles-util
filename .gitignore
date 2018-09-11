@@ -4,3 +4,5 @@ doc/source/script
 __pycache__
 bin
 man
+*.tar.xz
+manual.pdf

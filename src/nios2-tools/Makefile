@@ -10,7 +10,7 @@ generate: $(BIN_DIR) $(MAN_DIR) dist/nios2-search nios2-sh nios2-search.1 nios2-
 	cp *.1 $(MAN_DIR)/man1/
 
 dist/nios2-search: nios2-search.py
-	pyinstaller --onefile $<
+	pyinstaller --strip --onefile $<
 
 nios2-search.1: nios2-search.1.tr
 	sed 's/##DATE##/$(DATE)/g' < $< | sed 's/##VERSION##/$(NIOS2_SEARCH_VERSION)/g' > $@
