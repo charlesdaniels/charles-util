@@ -9,7 +9,7 @@ single file that can be readily transferred between systems with a single
 rsync command.
 """
 
-version = "0.0.1"
+version = "0.0.2"
 
 # Copyright 2018 Charles Daniels
 
@@ -107,7 +107,7 @@ def main():
     with open(args.tokenstore, 'w') as f:
         yaml.dump(working_tokenstore, f)
 
-    exit(exitcode)
+    sys.exit(exitcode)
 
 
 if __name__ == "__main__":

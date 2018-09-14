@@ -60,6 +60,10 @@ This file is a key-value pair store in YAML format.
 .IP 0.0.1
 Initial version.
 
+.IP 0.0.2
+Corrected an incorrect call to exit() that caused the exit code to always be
+nonzero.
+
 .SH COPYRIGHT
 
 (c) 2018 Charles A. Daniels, All Rights Reserved.
