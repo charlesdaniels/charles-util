@@ -2,4 +2,5 @@ get-token.1
 dist/
 build/
 __pycache__/
-
+.virtualenv
+pip3.log
