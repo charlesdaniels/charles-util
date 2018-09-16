@@ -56,3 +56,13 @@ release, along with the version current as of the given release.
 * tagdump: 0.0.1
 * tagsearch: 0.0.1
 
+### charles-util R2
+
+* get-token: 0.0.2
+
+#### Other Changes:
+
+* Builds for pyinstaller-ed python programs now use virtualenv.
+* Releases no longer include src/ to reduce size.
+* Release tarballs now include `charles-util` as a directory, rather than
+  placing all included files under the top level.
