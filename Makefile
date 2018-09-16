@@ -5,6 +5,7 @@ BIN_DIR=$(shell pwd)/bin
 MAN_DIR=$(shell pwd)/man
 RELEASE_STR=charles-util_R$(shell cat RELEASE)_$(shell uname -m)
 RELEASE_TAR=$(RELEASE_STR).tar.xz
+BASEN=$(shell basename $$(pwd))
 
 info:
 	@echo "PREFIX . . . . . . . . $(PREFIX)"
@@ -37,7 +38,7 @@ release: $(RELEASE_TAR)
 
 $(RELEASE_TAR): generate manual.pdf
 	rm -f $(RELEASE_TAR)
-	tar cfJ "$@" ./bin/ ./man/ ./src/ manual.pdf README.md LICENSE INSTALL RELEASE Makefile
+	cd .. && tar cfJ $(BASEN)/"$@" ./$(BASEN)/bin/ ./$(BASEN)/man/ ./$(BASEN)/manual.pdf ./$(BASEN)/README.md ./$(BASEN)/LICENSE ./$(BASEN)/INSTALL ./$(BASEN)/RELEASE ./$(BASEN)/Makefile
 
 manual.pdf: generate
 	bookman -p -t 'charles-util Reference Manual' man/*/* > $@
