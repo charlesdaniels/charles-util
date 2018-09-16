@@ -6,3 +6,5 @@ bin
 man
 *.tar.xz
 manual.pdf
+*.swp
+*.swo
