@@ -1,4 +1,4 @@
-PREFIX=$(shell echo $$HOME)/.local
+PREFIX=/usr/local
 BIN_INSTALL_DIR=$(PREFIX)/bin
 MAN_INSTALL_DIR=$(PREFIX)/man
 BIN_DIR=$(shell pwd)/bin

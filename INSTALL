@@ -1,10 +1,12 @@
-To install, simply run
+To install from a release, simply run:
 
-make BIN_INSTALL_DIR=<somewhere> MAN_INSTALL_DIR=<somewhere> install
+	sudo make install
 
-If you are installing from a release, the appropriate build artifacts will
-already be present in ./bin and ./man. If you are installing from source, the
-build artifacts will be generated as needed.
+To install into /usr/local/.
+
+To install from source, you first need to run
+
+	make generate
 
 Known dependencies to install from source:
 
