@@ -8,8 +8,9 @@ build artifacts will be generated as needed.
 
 Known dependencies to install from source:
 
-* pyinstaller (Python 3.X version)
+* python3.X with pip and virtualenv
 * upx (optional but recommended)
 * groff
 * bookman
 * pandoc
+* taglib development files (libtag1-dev on Debian, taglib-devel on Fedora)
