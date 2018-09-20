@@ -4,3 +4,4 @@ build/
 __pycache__/
 pip3.log
 .virtualenv
+colortool
