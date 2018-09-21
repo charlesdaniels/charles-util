@@ -23,7 +23,7 @@ tagsearch.1: tagsearch.1.tr
 	sed 's/##DATE##/$(DATE)/g' < $< | sed 's/##VERSION##/$(TAGSEARCH_VERSION)/g' > $@
 
 .virtualenv/bin/activate:
-	virtualenv --python=python3 .virtualenv
+	python3 -m virtualenv --python=python3 .virtualenv
 
 # this is a bit of a hack to give make a decent way of determining if we need
 # to install any dependancies

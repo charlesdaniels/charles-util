@@ -25,7 +25,7 @@ nios2-sh.1: nios2-sh.1.tr
 	sed 's/##DATE##/$(DATE)/g' < $< | sed 's/##VERSION##/$(NIOS2_SH_VERSION)/g' > $@
 
 .virtualenv/bin/activate:
-	virtualenv --python=python3 .virtualenv
+	python3 -m virtualenv --python=python3 .virtualenv
 
 # this is a bit of a hack to give make a decent way of determining if we need
 # to install any dependancies

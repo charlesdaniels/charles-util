@@ -66,3 +66,13 @@ release, along with the version current as of the given release.
 * Releases no longer include src/ to reduce size.
 * Release tarballs now include `charles-util` as a directory, rather than
   placing all included files under the top level.
+
+### charles-util R3 (WiP)
+
+* colortool: 1.0.0
+
+#### Other Changes:
+
+* `python3 -m virtualenv` is now used instead of `virtualenv` throughout the
+  build system, to support versions of virtualenv installed via OS package
+  managers.
