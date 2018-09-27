@@ -1,0 +1,79 @@
+.TH BYTESH "1" "##DATE##" "bytesh" ##VERSION##" "User Commands"
+
+.SH NAME
+bytesh - an interactive REPL for writing bytes
+
+.SH SYNOPSIS
+colortool [\-c [color]|\-v|\-h] [\-dxrn] [\-m mask] [\-f filter]
+bytesh [-v]
+
+.SH DESCRIPTION
+
+.PP
+\fBbytesh\fR is a simple REPL that allows one to write hexadecimal values into
+a readline-based prompt, which are converted to bytes and sent to standard
+error for redirection.
+
+.PP
+\fB\-\-version\fR / \fB\-b\fR
+.IP
+Display the version number of the program and exit.
+.PP
+
+You will nearly always want to re-direct standard error of this program into a
+file, FIFO, or device that you wish to write bytes into. This is accomplished
+as such:
+
+.PP
+$ bytesh 2> /path/to/output
+
+This program can be used non-interactively as such:
+
+.PP
+$ bytesh < input.txt > /dev/null 2> /path/to/output
+
+To view help information about how to use the REPL, run the help command within
+bytesh.
+
+Note also that you may wish to view the response your device returns to you
+live. To do this, you can spawn a background job that displays the output from
+the device like so:
+
+.PP
+$ stdbuf -o0 od -An -v -tx1 -w1 < /path/to/input &
+
+You can test bytesh with just a FIFO using the following shell snippet:
+
+.PP
+$ mkfifo bytsh_test.fifo
+
+.PP
+$ while true ; do sleep 1 ; done > bytesh_test.fifo &  # keep the FIFO open even on EOF
+
+.PP
+$ stdbuf -o0 od -An -v -tx1 -w1 < test.fifo &
+
+.PP
+$ bytesh 2> bytesh_test.fifo
+
+\fBNote\fR that leaving the od command running in the same shell session as
+bytesh can cause the response from the device to be mingled with the output
+from bytesh, which can cause negative side effects when mixed with GNU
+readline, which bytesh uses. To that end, you may wish to instead run bytesh in
+a separate shell session.
+
+.SH CHANGELOG
+
+.IP 0.0.1
+Initial version.
+
+.SH HISTORY
+
+Bytesh was written in the 2018 fall semester as a debugging tool for the
+author's robotics course. The robot used in the course was controlled by
+sending data one byte at a time into a serial port and reading the responses
+back. Bytesh was developed as a method to test sending commands to the robot
+without necessitating special libraries.
+
+.SH COPYRIGHT
+(c) 2018 Charles A. Daniels, All Rights Reserved

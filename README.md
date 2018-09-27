@@ -70,6 +70,7 @@ release, along with the version current as of the given release.
 ### charles-util R3 (WiP)
 
 * colortool: 1.0.0
+* bytesh: 0.0.1
 
 #### Other Changes:
 
