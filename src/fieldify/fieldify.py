@@ -33,13 +33,17 @@ import argparse
 import re
 import sys
 
+# when this flag is asserted, format_record() does not drop fields that match
+# the record separator regex.
+nomatchdrop = False
+
 descr = """
 This script consumes streaming data from standard in and splits it along a
 regular expression, then replaces the splits with a set field separator.  By
 default, it collapses whitespace-separated columns into tab-separated columns.
 """
 
-version = "0.0.1"
+version = "0.1.0"
 
 def format_record(rec, r, ofs):
     """format_record
@@ -52,7 +56,23 @@ def format_record(rec, r, ofs):
     :param ofs: output field separator
     """
 
-    return ofs.join([x for x in r.split(rec) if x != ""])
+    # drop fields that are empty or invalid
+    fields = []
+    for field in r.split(rec):
+        if field is None:
+            continue
+
+        if field is "":
+            continue
+
+        if (r.match(field) and (not nomatchdrop)):
+            # avoid edge cases where the field separator winds up in the split
+            # output
+            continue
+
+        fields.append(field)
+
+    return ofs.join(fields)
 
 def extract_records(s, irs):
     """extract_records
@@ -94,6 +114,13 @@ def main():
     parser.add_argument("--bufsize", "-b", default=4096, type=int,
             help="Override read buffer size. (default: 4096)")
 
+    parser.add_argument("--nomatchdrop", "-m", default=False,
+            action="store_true", help="By default, fields which match " +
+            "--regex are dropped. This prevents instances of the field " +
+            "separator from appearing in the output. Asserting this option " +
+            "will disable dropping such fields. This flag and the field " +
+            "dropping behavior were added in 0.1.0.")
+
     args = parser.parse_args()
 
     bufsize = args.bufsize
@@ -103,6 +130,9 @@ def main():
     irs = args.irs
     ors = args.ors
     r = None
+
+    global nomatchdrop
+    nomatchdrop=args.nomatchdrop
 
     try:
         r = re.compile(regex)

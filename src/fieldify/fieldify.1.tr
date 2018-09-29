@@ -37,6 +37,13 @@ format.This is used in lieu of an IFS. (default: \es
 .TP
 \fB\-\-bufsize\fR BUFSIZE, \fB\-b\fR BUFSIZE
 Override read buffer size. (default: 4096)
+.TP
+\fB\-\-nomatchdrop\fR, \fB\-m\fR
+By default, fields which match \fB\-\-regex\fR are dropped.
+This prevents instances of the field separator from
+appearing in the output. Asserting this option will
+disable dropping such fields. This flag and the field
+dropping behavior were added in 0.1.0.
 
 .SH EXAMPLES
 
@@ -78,10 +85,40 @@ beneficial to tweak it for performance reasons in different use cases. If you
 observe different output while changing the buffer size, you should report this
 as a bug.
 
+.PP
+The behavior of the --nomatchdrop flag is demonstrated below:
+
+.PP
+$ echo 'list, of, several, things, and a final thing' | fieldify -r '(, )|(, and )' --ofs '|'
+
+.IP
+list|of|several|things|and a final thing
+
+.PP
+$ echo 'list, of, several, things, and a final thing' | fieldify -r '(, )|(, and )' --ofs '|' --nomatchdrop
+
+.IP
+list|, |of|, |several|, |things|, |and a final thing
+
 .SH CHANGELOG
 
 .IP 0.0.1
 Initial version.
+
+.IP 0.1.0
+
+.IP \bu 2
+Fixed a bug when a regex was passed via --regex that caused re.split() to
+return instances of None.
+
+.IP \bu 2
+Fields yielded by splitting on --regex which match the regex supplied via
+--regex are now dropped. This avoids edge cases where field delimiters can
+occasionally appear in the output.
+
+.IP \bu 2
+Implemented the --nomatchdrop flag.
+
 
 .SH HISTORY
 .PP
