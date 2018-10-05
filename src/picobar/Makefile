@@ -11,7 +11,7 @@ generate: $(BIN_DIR) $(MAN_DIR) $(PROG) $(PROG).1
 	cp $(PROG).1 $(MAN_DIR)/man1/
 
 %: %.pl
-	pp -x --xargs=--version -o $@ $^
+	pp -x --xargs="--config ./config.ini --oneoff" -o $@ $^
 
 $(PROG).1: $(PROG).1.tr $(PROG)
 	sed 's/##DATE##/$(DATE)/g' < $< | sed 's/##VERSION##/$(VERSION)/g' > $@
