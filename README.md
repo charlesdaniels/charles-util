@@ -15,7 +15,8 @@
 		* [Other Changes:](#other-changes)
 	* [charles-util R3](#charles-util-r3)
 		* [Other Changes:](#other-changes-1)
-	* [charles-util R4 (WiP)](#charles-util-r4-wip)
+	* [charles-util R4](#charles-util-r4)
+		* [Other Changes](#other-changes-2)
 
 <!-- vim-markdown-toc -->
 
@@ -101,4 +102,13 @@ release, along with the version current as of the given release.
   build system, to support versions of virtualenv installed via OS package
   managers.
 
-### charles-util R4 (WiP)
+### charles-util R4
+
+
+#### Other Changes
+
+* Fixed build-related issues relating to picobar which caused the ip block not
+  to work in the compiled version. This happened sufficiently far into the R3
+  release that R3 could not be revised.
+
+* Updated INSTALL document with perl dependencies.

@@ -16,3 +16,11 @@ Known dependencies to install from source:
 * bookman
 * pandoc
 * taglib development files (libtag1-dev on Debian, taglib-devel on Fedora)
+* libconfig-tiny-perl
+* libfile-path-expand-perl
+* libfilesys-df-perl
+* libnet-address-ip-local-perl
+* libnumber-bytes-human-perl
+* libpar-packer-perl
+* libsys-meminfo-perl
+* libtimedate-perl
