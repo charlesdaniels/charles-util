@@ -1,5 +1,26 @@
 # charles-util
 
+## Contents
+
+
+<!-- vim-markdown-toc GFM -->
+
+* [Introduction](#introduction)
+* [Future Plans](#future-plans)
+* [Installation](#installation)
+* [License](#license)
+* [Release History](#release-history)
+	* [charels-util R1](#charels-util-r1)
+	* [charles-util R2](#charles-util-r2)
+		* [Other Changes:](#other-changes)
+	* [charles-util R3](#charles-util-r3)
+		* [Other Changes:](#other-changes-1)
+	* [charles-util R4 (WiP)](#charles-util-r4-wip)
+
+<!-- vim-markdown-toc -->
+
+## Introduction
+
 This is a collection of tools and utilities I have written which are large
 enough to warrant packaging properly and writing man pages for, but not large
 enough to make a dedicated project/repository/package worthwhile.
@@ -67,7 +88,7 @@ release, along with the version current as of the given release.
 * Release tarballs now include `charles-util` as a directory, rather than
   placing all included files under the top level.
 
-### charles-util R3 (WiP)
+### charles-util R3
 
 * colortool: 1.0.0
 * bytesh: 0.0.1
@@ -79,3 +100,5 @@ release, along with the version current as of the given release.
 * `python3 -m virtualenv` is now used instead of `virtualenv` throughout the
   build system, to support versions of virtualenv installed via OS package
   managers.
+
+### charles-util R4 (WiP)
