@@ -72,6 +72,7 @@ release, along with the version current as of the given release.
 * colortool: 1.0.0
 * bytesh: 0.0.1
 * fieldify: 0.1.0
+* picobar: 0.0.1
 
 #### Other Changes:
 

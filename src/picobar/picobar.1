@@ -1,0 +1,249 @@
+.TH PICOBAR.PL "1" "October 2018" "picobar 0.0.1" "User Commands"
+
+.SH NAME
+picobar.pl \- a very small status bar
+
+.SH SYNOPSIS
+picobar [\-v] [\-h] [\-p] [\-s TIME] [\-o] [\-c CONFIG]
+
+.SH DESCRIPTION
+.PP
+\fB\-\-help\fR / \fB\-h\fR
+.IP
+Display this help message.
+.PP
+\fB\-\-version\fR / \fB\-v\fR
+.IP
+Display the version number of this program and exit
+.PP
+\fB\-\-profile\fR / \fB\-p\fR
+.IP
+Display the time elapsed to generate each bar element.
+.PP
+\fB\-\-sleeptime\fR [TIME] / \fB\-s\fR [TIME]
+.IP
+Set time to sleep before printing an updated copy of
+the status bar as an integer number of seconds.
+(default: 5)
+.PP
+\fB\-\-oneoff\fR / \fB\-o\fR
+.IP
+Display the status bar one and then exit, rather than
+continuously running in a loop.
+.PP
+\fB\-\-config\fR [CONFIG] / \fB\-c\fR [CONFIG]
+.IP
+Specify the config ini file. (default:
+~/.config/picobar/config.ini
+
+.SH FILES
+
+.I config.ini
+
+.IP
+By default, this file is stored in ~/.config/picobar/config.ini, but this can
+be overridden via the \fB--config\fR flag. This file should be in INI format
+(specifically, it is parsed using Perl's Config::Tiny). All sections are
+optional.
+
+.IP
+Note that where "format tags" are described, this implies that a format string
+may optionally include "#tagname" and have it replaced by the appropriate
+content during bar generation. For example, in a "fsinfo" block's "format"
+field, the format tag "#avail" is replaced with the free space in that
+filesystem - if the format tag was "free space: #avail", then the output block
+in the final bar might be "free space 20G".
+
+.IP \fB[bar]\fR 0.4i
+This section specifies the contents of the bar itself. It contains
+the following fields:
+
+.RS
+
+.IP order 0.4i
+A comma-delimited list of blocks, which will be displayed in the order they are
+specified here. Blocks are identified by their section name in the config file
+(i.e. the load_average block corresponds to the \fB[load_average]\fR section).
+
+Addtionally, the following special blocks are available:
+
+.RS
+
+.IP fsinfo#section
+
+Display information about a filesystem based on the configuration from
+\fB[section]\fR, which should contain a "path" field specifying the path to the
+filesystem, and a "format" field specifying the output format. The format field
+supports the format tags: #path, $avail, #free, #total, and #used, which
+correspond to filesystem path, available space, free space ,total space, and
+used space, respectively. All sizes are displayed in human-readable format.
+
+.IP custom#command
+
+Executes "command" and display it's output as the block contents. For example,
+"custom#uname" would display the system uname as the block contents.
+
+.IP literal#string
+
+Display "string" as the block contents.
+
+.IP filecontents#section
+
+Display the contents of the file specified in the "path" section of
+\fB[section]\fR as the block contents.
+
+.RE
+
+.IP separator 0.4i
+Change the block separator. The default is s|s. Note that any instance of the
+character 's' will be replaced by a whitespace (' ').
+
+.RE
+
+.IP \fB[volume]\fR
+Obtain the current system volume level. The following fields may be specified:
+
+.RS
+
+.IP format
+The format string used to generate the volume block contents. This must contain
+exactly one instance of "%s" which will be replaced with the current volume
+percentage. The default value is "%s%%".
+
+.IP volume_command
+If either 'pacmd' or 'amixer' are specified, the output of the given command
+will be parsed appropriately. If any other value is specified, it will be
+executed as a command the output of which will be assumed to be the current
+volume percentage. If nothing is specified, either pacmd or amixer will
+be chosen according to which is installed.
+
+
+.RE
+
+.IP \fB[ssid]\fR
+Get the currently connected wifi SSID. The following fields may be specified:
+
+
+.RS
+
+.IP method 0.4i
+If "nmcli" is specified, the output of the "nmcli" command will be parsed
+to obtain the SSID. If any other value is specified, it will be executed as
+a command and the output taken to be the name of the current SSID. If no
+value is specified, nmcli will be selected automatically if the nmcli command
+is available.
+
+.IP format 0.4i
+A format string which must contain exactly one instance of "%s", which will be
+replaced with the detected SSID. If unspecified, this defaults to "ssid: %s"
+
+.IP max_length 0.4i
+An integer specifying the maximum number of characters to display. If the
+SSID exceeds this number of characters, it will be truncated. The default
+value for this field is 10.
+
+.RE
+
+.IP \fB[time]\fR
+Get the current system time. The following fields are available:
+
+.RS
+
+.IP fmt_str 0.4i
+This should be a POSIX strftime time formatting specifier, which will be used
+to format the time for display. The default value is "%H:%M:%S".
+
+.RE
+
+.IP \fB[battery]\fR
+Get the current system battery level. Note that this currently only supports
+Linux. The following fields are available:
+
+.RS
+
+.IP format 0.4i
+Format specifier. The format tags #percentage, #time, and #status are
+available, and correspond to the remaining battery percent, time remaining
+before the battery is depleted, and the status of the battery (either BAT or
+AC). The default value for this field is "#status #percentage% (#time)".
+
+.RE
+
+.IP \fB[load_average]\fR
+Get the current system load average. The following fields are available:
+
+.RS
+
+.IP method 0.4i
+If "proc" is specified, then /proc/loadavg will be parsed to obtain the
+load average. If "uptime" is specified, then the output of the uptime
+command will be parsed to obtain the load average. If any other value is
+specified, it will be executed as a command and it's output treated as
+the load average. If unspecified, picobar will select automatically from
+proc and uptime.
+
+.IP format 0.4i
+A format string. Exactly one instance of "%s" will be replaced with the current
+load average. The default value for this field is "%s"
+
+.RE
+
+.IP \fB[ip]\fR
+Obtain the current LAN IP address. The following fields are available:
+
+.RS
+
+.IP format 0.4i
+A format string. Exactly one instance of "%s" will be replaced with the current
+LAN IP. The default value for this field is "%s"
+
+.RE
+
+.IP \fB[meminfo]\fR
+Get memory information about the system. The following fields are available:
+
+.RS
+
+.IP format 0.4i
+The following format tags are available: #total, #free, #swapfree, and
+#swaptotal, corresponding to the total memory install, free memory, free swap
+space, and total swap space, respectively. The default value for this field
+is "free: #free".
+
+.RE
+
+.IP \fB[coretemp]\fR
+Get the current CPU core temperature. This is currently only supported on
+Linux. The following fields are available:
+
+.RS
+
+.IP format 0.4i
+The following format tags are available: #temp, which is the current
+core temperature in Celsius. The default value for this field is "#temp C".
+
+.RE
+
+.SH CHANGELOG
+
+.IP 0.0.1
+Initial Version
+
+.SH HISTORY
+
+.PP
+Picobar started life as a shell script named 'system-statusline', which was
+written due to it's author's dissatisfaction with i3bar. Over time,
+system-statusline outgrew what was convenient or pleasant to do with shell, and
+was rewritten in Python. Unfortunately, Python proved unsuitable due to
+portability and reliability issues with the psutil module.
+
+.PP
+In Fall of 2018, picobar was born, as from-scratch rewrite of system-statusline
+in Perl. New features included a configuration file (system-statusline had been
+hard-coded to it's author's preferred style), faster execution by using Perl
+libraries where possible, rather than calling out to shell scripts, and
+generally better code quality and maintainability.
+
+.SH COPYRIGHT
+(c) 2018 Charles A. Daniels, All Rights Reserved
