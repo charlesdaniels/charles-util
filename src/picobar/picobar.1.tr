@@ -1,4 +1,4 @@
-.TH PICOBAR.PL "1" "##DATE##" "picobar ##VERSION##" "User Commands"
+.TH PICOBARL "1" "##DATE##" "picobar ##VERSION##" "User Commands"
 
 .SH NAME
 picobar.pl \- a very small status bar
