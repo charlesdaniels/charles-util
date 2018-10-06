@@ -229,6 +229,20 @@ core temperature in Celsius. The default value for this field is "#temp C".
 .IP 0.0.1
 Initial Version
 
+.IP 0.0.2
+
+.RS
+
+.IP \[bu] 0.4i
+Fixed bug where wifi SSIDs with spaces in them would break the SSID block
+(only the first space-delimited token would be shown).
+
+.IP \[bu] 0.4i
+Fixed bug where string truncation would result in resulting strings being 4
+characters longer than desired.
+
+.RE
+
 .SH HISTORY
 
 .PP

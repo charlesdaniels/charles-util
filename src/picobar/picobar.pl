@@ -58,8 +58,13 @@ sub strtruncate {
 	my $str = shift // confess ("did not specify string to truncate");
 	my $length = shift // confess ("did not specify string length");
 
+	# guarantee the length is at least 5
+	if ($length < 5) {
+		$length = 5;
+	}
+
 	if (length($str) > $length) {
-		$str = substr $str, 0, $length;
+		$str = substr $str, 0, $length-4;
 		$str = "$str ...";
 	}
 
@@ -321,24 +326,14 @@ sub get_ssid {
 
 	given ($method) {
 		when ("nmcli") {
-			my $nmcli = `nmcli dev wifi list`;
+			my $nmcli = `nmcli --terse --fields active,ssid dev wifi`;
 			OUTER:
 			foreach my $line (split /\n/, $nmcli) {
 
 				# match lines starting with *
-				foreach my $item ($line =~ /([*].*)/) {
+				foreach my $item ($line =~ /(yes:.*)/) {
 
-					# extract the SSID field
-					my $ssid_field = strip((split /[ ]+/,$line)[1]);
-
-					# make sure we don't match the header
-					if (!($ssid_field eq "SSID")) {
-						$ssid = $ssid_field;
-
-						# we only care about the first
-						# one
-						last OUTER;
-					}
+					$ssid = (split /:/, $item)[1];
 
 				}
 			}
