@@ -241,6 +241,12 @@ Fixed bug where wifi SSIDs with spaces in them would break the SSID block
 Fixed bug where string truncation would result in resulting strings being 4
 characters longer than desired.
 
+.IP \[bu] 0.4i
+Fixed bug where failing to obtain the current IP address would cause picobar to
+crash. In particular, this would be triggered any time the system lost it's
+connection, such as while waking from suspend. Failure to obtain the current IP
+now displays a warning.
+
 .RE
 
 .SH HISTORY

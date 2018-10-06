@@ -13,6 +13,7 @@ use Sys::MemInfo;
 use Getopt::Long;
 use File::Path::Expand;
 use Carp;
+use Try::Tiny;
 
 # enable the given-when feature, since Switch is deprecated
 use feature qw( switch );
@@ -430,7 +431,13 @@ sub get_ip {
 		$format_str = $config->{volume}->{format};
 	}
 
-	my $address = Net::Address::IP::Local->public;
+	my $address = "127.0.0.1";
+
+	try {
+		$address = Net::Address::IP::Local->public;
+	} catch {
+		carp("failed to get IP address: $_");
+	};
 
 	return sprintf($format_str, $address);
 }
@@ -614,7 +621,7 @@ GetOptions(
 
 # handle --version
 if ($version_flag) {
-	printf("0.0.1\n");
+	printf("0.0.2\n");
 	exit(0);
 }
 
