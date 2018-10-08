@@ -14,6 +14,9 @@
 #include <limits.h>
 #include <unistd.h>
 
+/* this fixes a compiler warning on OpenBSD, since apparently X11 has GNU
+ * extensions */
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
