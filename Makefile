@@ -6,11 +6,13 @@ MAN_DIR=$(shell pwd)/man
 RELEASE_STR=charles-util_R$(shell cat RELEASE)_$(shell uname -m)
 RELEASE_TAR=$(RELEASE_STR).tar.xz
 BASEN=$(shell basename $$(pwd))
+MAKECMD=$(shell if [ -x "$$(which gmake)" ] ; then echo gmake ; else echo make ; fi)
 
 info:
 	@echo "PREFIX . . . . . . . . $(PREFIX)"
 	@echo "BIN_INSTALL_DIR  . . . $(BIN_INSTALL_DIR)"
 	@echo "MAN_INSTALL_DIR  . . . $(MAN_INSTALL_DIR)"
+	@echo "MAKECMD  . . . . . . . $(MAKECMD)"
 	@echo "To install, use make install"
 
 $(BIN_DIR):
@@ -32,7 +34,7 @@ install: $(BIN_DIR) $(MAN_DIR) $(BIN_INSTALL_DIR) $(MAN_INSTALL_DIR) generate
 	cp -r "$(MAN_DIR)"/* "$(MAN_INSTALL_DIR)/"
 
 generate: $(BIN_DIR) $(MAN_DIR) $(BIN_INSTALL_DIR) $(MAN_INSTALL_DIR)
-	for prog in src/* ; do make BIN_DIR="$(BIN_DIR)" MAN_DIR="$(MAN_DIR)" -C "$$prog" generate ; if [ $$? -ne 0 ] ; then break ; fi  ; done
+	for prog in src/* ; do $(MAKECMD) BIN_DIR="$(BIN_DIR)" MAN_DIR="$(MAN_DIR)" -C "$$prog" generate ; if [ $$? -ne 0 ] ; then break ; fi  ; done
 
 release: $(RELEASE_TAR)
 
@@ -44,5 +46,5 @@ manual.pdf: generate
 	bookman -p -t 'charles-util Reference Manual' man/*/* > $@
 
 clean:
-	for prog in src/* ; do make BIN_DIR="$(BIN_DIR)" MAN_DIR="$(MAN_DIR)" -C "$$prog" clean ; done
-	rm -rf "$(BIN_DIR)" "$(MAN_DIR)" *.tar.xz manual.pdf
+	for prog in src/* ; do $(MAKECMD) BIN_DIR="$(BIN_DIR)" MAN_DIR="$(MAN_DIR)" -C "$$prog" clean ; done
+	rm -rf "$(BIN_DIR)" "$(MAN_DIR)" *.tar.xz manual.pdf src/*/.virtualenv
