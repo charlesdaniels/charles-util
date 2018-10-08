@@ -318,6 +318,13 @@ int main(int argc, char** argv) {
 	hex_flag     = false;
 	rgb_flag     = false;
 
+	/* handle case where no arguments were provided at all */
+	if (argc <= 1) {
+		fprintf(stderr, "Oops! You need to provide some arguments. ");
+		fprintf(stderr, "Try using --help\n");
+		exit(1);
+	}
+
 	while (1)
 	{
 		static struct option long_options[] =
