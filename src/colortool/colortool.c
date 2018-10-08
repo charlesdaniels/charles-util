@@ -1,30 +1,6 @@
-#include <FL/Fl.H>
-#include <FL/Fl_Window.H>
-#include <FL/Fl_Button.H>
-#include <FL/Enumerations.H>
-#include <FL/fl_draw.H>
-#include <FL/Fl_Text_Display.H>
+#include "colortool.h"
 
-#include <getopt.h>
-#include <iostream>
-#include <string.h>
-#include <string>
-#include <stdio.h>
-#include <stdlib.h>
-#include <climits>
-
-// number of pixels for the colored box
-#define COLOR_SIZE 150
-
-// number of pixels high the text box should be
-#define TEXT_BOX_HEIGHT 50
-
-// current program version
-#define VERSION_STRING "1.0.0"
-
-using namespace std;
-
-// global flag that prevents the handler from causing an exit
+/* global flag that prevents the handler from causing an exit */
 bool disable_colortool_handler = false;
 
 static long strtol_safe (const char *str, int base) {
@@ -33,13 +9,13 @@ static long strtol_safe (const char *str, int base) {
 	char *endptr;
 	long val;
 
-	// reset errno
+	/* reset errno */
 	errno = 0;
 
-	// attempt to parse
+	/* attempt to parse */
 	val = strtol(str, &endptr, base);
 
-	// check if there was any error
+	/* check if there was any error */
 	if (endptr== str ||
 	    *endptr != '\0' ||
 	    ((val == LONG_MIN || val == LONG_MAX) && errno == ERANGE)) {
@@ -47,52 +23,51 @@ static long strtol_safe (const char *str, int base) {
 		fprintf(stderr,
 			"FATAL: invalid long int '%s' with base %i\n",
 			str,
-			base,
-			endptr
+			base
 		);
 		exit(1);
 	}
 	return val;
 }
 
-int colortool_handler (int event) {
+/* int colortool_handler (int event) { */
 	/* handler that causes the program to close, this is how colortool
 	 * closes on any keyperess */
-	
-	if (disable_colortool_handler) {return 1;}
+/*          */
+/*         if (disable_colortool_handler) {return 1;} */
+/*  */
+/*         if (event == FL_KEYDOWN || */
+/*             event == FL_SHORTCUT || */
+/*             event == FL_KEYUP ) { */
+/*                 [> only exit on keypress events <] */
+/*                 exit(0); */
+/*         } */
+/* } */
+/*  */
+/* class Drawing : public Fl_Widget { */
+/*         [> Widget that draws a box of the specified RGB color <] */
+/*  */
+/*         unsigned char r, g, b; */
+/*  */
+/*         public: */
+/*         Drawing(int X,int Y,int W,int H) : Fl_Widget(X,Y,W,H) { */
+/*                 // register the event handler to close on keypress */
+/*                 Fl::add_handler(colortool_handler); */
+/*         } */
+/*         void set_color(unsigned char r, unsigned char g, unsigned char b) { */
+/*                 this->r = r; */
+/*                 this->g = g; */
+/*                 this->b = b; */
+/*         } */
+/*         private: */
+/*         void draw() { */
+/*                 Fl_Color c = fl_rgb_color(r, g, b); */
+/*                 fl_color(c); */
+/*                 fl_rectf(0,0, COLOR_SIZE, COLOR_SIZE); */
+/*         } */
+/* }; */
 
-	if (event == FL_KEYDOWN ||
-	    event == FL_SHORTCUT ||
-	    event == FL_KEYUP ) {
-		/* only exit on keypress events */
-		exit(0);
-	}
-}
-
-class Drawing : public Fl_Widget {
-	/* Widget that draws a box of the specified RGB color */
-
-	unsigned char r, g, b;
-
-	public:
-	Drawing(int X,int Y,int W,int H) : Fl_Widget(X,Y,W,H) {
-		// register the event handler to close on keypress
-		Fl::add_handler(colortool_handler);
-	}
-	void set_color(unsigned char r, unsigned char g, unsigned char b) {
-		this->r = r;
-		this->g = g;
-		this->b = b;
-	}
-	private:
-	void draw() {
-		Fl_Color c = fl_rgb_color(r, g, b);
-		fl_color(c);
-		fl_rectf(0,0, COLOR_SIZE, COLOR_SIZE);
-	}
-};
-
-inline unsigned int rgbtou24(unsigned char r, unsigned char g, unsigned char b) {
+unsigned int rgbtou24(unsigned char r, unsigned char g, unsigned char b) {
 	/* cast a set of separate u8 r g b values into one integer */
 
 	unsigned int c;
@@ -103,7 +78,7 @@ inline unsigned int rgbtou24(unsigned char r, unsigned char g, unsigned char b) 
 	return c;
 }
 
-inline void u24torgb(unsigned int c, unsigned char* r, unsigned char* g, unsigned char* b) {
+void u24torgb(unsigned int c, unsigned char* r, unsigned char* g, unsigned char* b) {
 	/* cast an unsigned int 24-bit color value to individual one-byte r g b
 	 * values */
 	*r = (c & 0x00FF0000) >> 16;
@@ -167,7 +142,7 @@ unsigned int parse_color(char* color_str) {
 	}
 }
 
-inline unsigned int apply_mask(unsigned int c, char* mask) {
+static unsigned int apply_mask(unsigned int c, char* mask) {
 	/* Takes a mask in as a hex string and binary OR it with the color.
 	 * The string is hard-coded as base 16, and specifies the mask in
 	 * the format 0x00RRGGBB. */
@@ -175,7 +150,7 @@ inline unsigned int apply_mask(unsigned int c, char* mask) {
 	return c | strtol_safe(mask, 16);
 }
 
-inline unsigned int apply_filter(unsigned int c, char* filter) {
+static unsigned int apply_filter(unsigned int c, char* filter) {
 	/* Takes in a base-16 string specifying a filter, which is binary
 	 * AND-ed with the color and returned. The channels are arranged as
 	 * 0x00RRGGBB. */
@@ -197,7 +172,9 @@ colortool [-c [color]|-v|-h] [-dxrn] [-m mask] [-f filter] \n\
 	If asserted, display the specified color in a graphical window. \n\
 	Note that this application is safe to use headlessly as long as \n\
 	this flag is not asserted. \n\
-\n\
+\n");
+
+	printf("\
 --output_hex / -x \n\
 	Display the specified color on standard out in #RRGGBB format. \n\
 	If both -x and -r are specified, the hex format is printed before the\n\
@@ -211,12 +188,16 @@ colortool [-c [color]|-v|-h] [-dxrn] [-m mask] [-f filter] \n\
 --noclose / -n\n\
 	Do not close the window produced by -d on any keystroke (the default\n\
 	behavior). The window can still be closed by WM close events.\n\
+");
+	printf("\
 \n\
 --mask [mask] / -m [mask]\n\
 	Apply a mask to the specified color before handling -d, -x, or -r. \n\
 	The mask is specified in 0xRRGGBB format, and is binary OR-ed with \n\
 	the color. Note that the mask specified with -m is applied before the\n\
-	filter specified by -f. \n\
+	filter specified by -f. \n");
+
+	printf("\
 \n\
 --filter [filter] / -f [filter]\n\
 	Apply a filter to the specified color before handling -d, -x, or -r. \n\
@@ -234,47 +215,106 @@ colortool [-c [color]|-v|-h] [-dxrn] [-m mask] [-f filter] \n\
 	exit(0);
 }
 
-int display_color(unsigned int c) {
+void display_color(unsigned int c) {
 	/* Display a window using FLTK with a box showing the desired
 	 * color. */
 
-	// convert the color to r, g, b format for the drawing widget
 	unsigned char r, g, b;
+	Display* display;
+	XColor user_color;
+	int white_color, black_color;
+	Colormap cmap;
+	Window window;
+	GC gc;
+	XEvent xev;
+	char* msg;
+
+	/* allocate the color */
 	u24torgb(c, &r, &g, &b);
+	user_color.red   = r << 8; /* note that in Xlib, colors are stored */
+	user_color.blue  = b << 8; /* at 48 bits per pixel, hence the left */
+	user_color.green = g << 8; /* shifts */
 
-	// setup the window
-	Fl_Window *window = new Fl_Window(COLOR_SIZE,
-	                                  COLOR_SIZE + TEXT_BOX_HEIGHT,
-	                                  "colortool");
+	/* open the display */
+	display = XOpenDisplay(NULL);
+	if (display == NULL) {
+		fprintf(stderr, "FATAL: could not open display\n");
+		exit(1);
+	}
 
+	/* fetch the default colormap for the display */
+	cmap = DefaultColormap(display, DefaultScreen(display));
 
-	// center the window on the display
-	window->position((Fl::w() - window->w())/2, (Fl::h() - window->h())/2);
+	/* setup colors we want to use */
+	black_color = BlackPixel(display, DefaultScreen(display));
+	white_color = WhitePixel(display, DefaultScreen(display));
+	if (XAllocColor(display, cmap, &user_color) == 0){
+		fprintf(stderr, "FATAL: failed to allocate color %in", c);
+		exit(1);
+	}
 
-	// setup the drawing canvas
-	Drawing canvas(0, 0, COLOR_SIZE, COLOR_SIZE);
-	canvas.set_color(r, g, b);
+	/* create the window */
+	window = XCreateSimpleWindow(display,
+					DefaultRootWindow(display),
+					0,
+					0,
+					COLOR_SIZE,
+					COLOR_SIZE + TEXT_BOX_HEIGHT,
+					0,
+					black_color,
+					black_color);
 
-	// generate a string showing the color in R,G,B and hex formats
-	char* color_str;
-	color_str = (char*) malloc(128 * sizeof(char));
-	sprintf(color_str, "%i, %i, %i\n#%06x", r, g, b, c);
+	/* declare the window to be modal (transient) */
+	XSetTransientForHint(display, window, window);
 
-	// create the text display widget and insert color_str into the
-	// buffer so it is shown on the screen
-	Fl_Text_Buffer *buff = new Fl_Text_Buffer();
-	Fl_Text_Display *disp = new Fl_Text_Display(0,
-	                                            COLOR_SIZE,
-	                                            COLOR_SIZE,
-	                                            TEXT_BOX_HEIGHT,
-	                                            "");
-	disp->buffer(buff);
-	buff->text(color_str);
+	/* set the window title */
+	XStoreName(display, window, COLORTOOL_TITLE);
 
-	// Make the window visible and start processing events
-	window->end();
-	window->show();
-	return Fl::run();
+	/* register to receive events */
+	XSelectInput(display, window,
+			KeyReleaseMask | StructureNotifyMask);
+
+	/* place the window on the display */
+	XMapWindow(display, window);
+
+	/* create the graphics context to draw on */
+	gc = XCreateGC(display, window, 0, NULL);
+
+	/* wait for the window to become ready */
+	while (xev.type != MapNotify) { XNextEvent(display, &xev); }
+
+	/* display the text at the bottom of the window */
+	XSetForeground(display, gc, white_color);
+	msg = (char*) malloc(MESSAGE_SIZE * sizeof(char));
+	snprintf(msg, MESSAGE_SIZE, "%i, %i, %i / #%06x", r, g, b, c);
+	XDrawString(display, window, gc,
+			0, COLOR_SIZE + (TEXT_BOX_HEIGHT * 0.75),
+			msg, strlen(msg));
+
+	/* draw the color box */
+	XSetForeground(display, gc, user_color.pixel);
+	XFillRectangle(display, window, gc, 0, 0, COLOR_SIZE, COLOR_SIZE);
+
+	/* send commands to the display server */
+	XFlush(display);
+
+	/* flush event buffer to prevent the window from closing instantly */
+	XNextEvent(display, &xev);
+	XNextEvent(display, &xev);
+
+	/* close the window on the first key release event... */
+	while (true) {
+		XNextEvent(display, &xev);
+		if (((! disable_colortool_handler) &&
+			(xev.type == KeyRelease)) ||
+			(disable_colortool_handler &&
+			(xev.type == KeyRelease) &&
+			(xev.xkey.keycode == 0x09)))
+		{
+			XCloseDisplay(display);
+			exit(0);
+		}
+	}
 }
 
 int main(int argc, char** argv) {
@@ -284,14 +324,14 @@ int main(int argc, char** argv) {
 	char* color;
 	char* filter;
 	char* mask;
-	color = NULL;
-
 	unsigned int color_i;
 
-	// default mask and filter setup - if not overridden, these just do
-	// nothing at all.
-	filter = strdup("0xFFFFFFFF");
-	mask   = strdup("0x00000000");
+	color = NULL;
+
+	/* default mask and filter setup - if not overridden, these just do */
+	/* nothing at all. */
+	STRDUP(filter, "0xFFFFFFFF");
+	STRDUP(mask, "0x00000000");
 
 	display_flag = false;
 	hex_flag     = false;
@@ -329,7 +369,7 @@ int main(int argc, char** argv) {
 				break;
 
 			case 'c':
-				color = strdup(optarg);
+				STRDUP(color, optarg);
 				break;
 
 			case 'v':
@@ -374,29 +414,30 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	// parse color
+	/* parse color */
 	color_i = parse_color(color);
 
-	// apply filter and mask (the default values means nothing happens
-	// if the user does not provide something different
+	/* apply filter and mask (the default values means nothing happens */
+	/* if the user does not provide something different */
 	color_i = apply_mask(color_i, mask);
 	color_i = apply_filter(color_i, filter);
 
-	// display in hex format
+	/* display in hex format */
 	if (hex_flag) {
 		printf("#%06x\n", color_i);
 	}
 
-	// display in r,g,b format
+	/* display in r,g,b format */
 	if (rgb_flag) {
 		unsigned char r, g, b;
 		u24torgb(color_i, &r, &g, &b);
 		printf("%i,%i,%i\n", r, g, b);
 	}
 
-	// display in GUI
+	/* display in GUI */
 	if (display_flag) {
-		return display_color(color_i);
+		display_color(color_i);
+		return 0;
 	} else {
 		return 0;
 	}

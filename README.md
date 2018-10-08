@@ -17,6 +17,7 @@
 		* [Other Changes:](#other-changes-1)
 	* [charles-util R4](#charles-util-r4)
 		* [Other Changes](#other-changes-2)
+	* [charles-util R5](#charles-util-r5)
 
 <!-- vim-markdown-toc -->
 
@@ -112,3 +113,8 @@ release, along with the version current as of the given release.
   release that R3 could not be revised.
 
 * Updated INSTALL document with perl dependencies.
+
+### charles-util R5
+
+* picobar: 0.0.2
+* colortool: 1.0.1

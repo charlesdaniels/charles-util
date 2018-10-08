@@ -42,7 +42,8 @@ R,G,B format.
 \fB\-\-noclose\fR / \fB\-n\fR
 .IP
 Do not close the window produced by \fB\-d\fR on any keystroke (the default
-behavior). The window can still be closed by WM close events.
+behavior). The window can still be closed by WM close events or by pressing
+the escape key.
 .PP
 \fB\-\-mask\fR [mask] / \fB\-m\fR [mask]
 .IP
@@ -89,14 +90,35 @@ Initial version.
 
 .IP 1.0.0
 
-.IP \bu
+.RS
+
+.IP \[bu] 0.4i
 Re-wrote colortool in C++ with FLTK.
 
-.IP \bu
+.IP \[bu] 0.4i
 Implemented --noclose.
 
-.IP \bu
+.IP \[bu] 0.4i
 --mask and --filter now accept values as hex numbers.
+
+.RE
+
+.IP 1.0.1
+
+.RS
+
+.IP \[bu] 0.4i
+Removed dependency on FLTK and switched to using Xlib directly. This is a
+cosmetic change only.
+
+.IP \[bu] 0.4i
+Implementation language changed to C89 from C++.
+
+.IP \[bu] 0.4i
+When \fB--noclose\fR is asserted, the window can now be dismissed by pressing
+the escape key.
+
+.RE
 
 .SH COPYRIGHT
 (c) 2018 Charles A. Daniels, All Rights Reserved
