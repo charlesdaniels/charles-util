@@ -120,12 +120,5 @@ the escape key.
 
 .RE
 
-.SH BUGS
-
-.IP \[bu] 0.4i
-Switching workspaces and possible other visibility-affecting events causes the
-window to go blank. This appears to be related to the fact that colortool does
-not handle VisibilityNotify events.
-
 .SH COPYRIGHT
 (c) 2018 Charles A. Daniels, All Rights Reserved

@@ -29,44 +29,6 @@ static long strtol_safe (const char *str, int base) {
 	}
 	return val;
 }
-
-/* int colortool_handler (int event) { */
-	/* handler that causes the program to close, this is how colortool
-	 * closes on any keyperess */
-/*          */
-/*         if (disable_colortool_handler) {return 1;} */
-/*  */
-/*         if (event == FL_KEYDOWN || */
-/*             event == FL_SHORTCUT || */
-/*             event == FL_KEYUP ) { */
-/*                 [> only exit on keypress events <] */
-/*                 exit(0); */
-/*         } */
-/* } */
-/*  */
-/* class Drawing : public Fl_Widget { */
-/*         [> Widget that draws a box of the specified RGB color <] */
-/*  */
-/*         unsigned char r, g, b; */
-/*  */
-/*         public: */
-/*         Drawing(int X,int Y,int W,int H) : Fl_Widget(X,Y,W,H) { */
-/*                 // register the event handler to close on keypress */
-/*                 Fl::add_handler(colortool_handler); */
-/*         } */
-/*         void set_color(unsigned char r, unsigned char g, unsigned char b) { */
-/*                 this->r = r; */
-/*                 this->g = g; */
-/*                 this->b = b; */
-/*         } */
-/*         private: */
-/*         void draw() { */
-/*                 Fl_Color c = fl_rgb_color(r, g, b); */
-/*                 fl_color(c); */
-/*                 fl_rectf(0,0, COLOR_SIZE, COLOR_SIZE); */
-/*         } */
-/* }; */
-
 unsigned int rgbtou24(unsigned char r, unsigned char g, unsigned char b) {
 	/* cast a set of separate u8 r g b values into one integer */
 
@@ -223,6 +185,7 @@ void display_color(unsigned int c) {
 	Display* display;
 	XColor user_color;
 	int white_color, black_color;
+	bool first_loop;
 	Colormap cmap;
 	Window window;
 	GC gc;
@@ -272,7 +235,7 @@ void display_color(unsigned int c) {
 
 	/* register to receive events */
 	XSelectInput(display, window,
-			KeyReleaseMask | StructureNotifyMask);
+		KeyReleaseMask | StructureNotifyMask | VisibilityChangeMask);
 
 	/* place the window on the display */
 	XMapWindow(display, window);
@@ -283,34 +246,52 @@ void display_color(unsigned int c) {
 	/* wait for the window to become ready */
 	while (xev.type != MapNotify) { XNextEvent(display, &xev); }
 
-	/* display the text at the bottom of the window */
-	XSetForeground(display, gc, white_color);
-	msg = (char*) malloc(MESSAGE_SIZE * sizeof(char));
-	snprintf(msg, MESSAGE_SIZE, "%i, %i, %i / #%06x", r, g, b, c);
-	XDrawString(display, window, gc,
-			0, COLOR_SIZE + (TEXT_BOX_HEIGHT * 0.75),
-			msg, strlen(msg));
-
-	/* draw the color box */
-	XSetForeground(display, gc, user_color.pixel);
-	XFillRectangle(display, window, gc, 0, 0, COLOR_SIZE, COLOR_SIZE);
-
-	/* send commands to the display server */
-	XFlush(display);
-
-	/* flush event buffer to prevent the window from closing instantly */
-	XNextEvent(display, &xev);
-	XNextEvent(display, &xev);
-
 	/* close the window on the first key release event... */
+	first_loop = true;
 	while (true) {
 		XNextEvent(display, &xev);
+
+		if ((xev.type == VisibilityNotify) &&
+			(xev.xvisibility.state == VisibilityUnobscured)) {
+			/* draw the window contents every time the window
+			 * becomes un-obscured */
+
+			/* display the text at the bottom of the window */
+			XSetForeground(display, gc, white_color);
+
+			msg = (char*) malloc(MESSAGE_SIZE * sizeof(char));
+
+			snprintf(msg, MESSAGE_SIZE, "%i, %i, %i / #%06x",
+				r, g, b, c);
+
+			XDrawString(display, window, gc,
+				0, COLOR_SIZE + (TEXT_BOX_HEIGHT * 0.75),
+				msg, strlen(msg));
+
+			/* draw the color box */
+			XSetForeground(display, gc, user_color.pixel);
+			XFillRectangle(display, window, gc,
+				0, 0, COLOR_SIZE, COLOR_SIZE);
+
+			/* send commands to the display server */
+			XFlush(display);
+		}
+
 		if (((! disable_colortool_handler) &&
 			(xev.type == KeyRelease)) ||
 			(disable_colortool_handler &&
 			(xev.type == KeyRelease) &&
 			(xev.xkey.keycode == 0x09)))
 		{
+			if (first_loop && (!disable_colortool_handler)) {
+				/* avoid closing instantly on the first
+				 * KeyRelease event. We check
+				 * disable_colortool_handler so that the first
+				 * press of the esc key even when
+				 * -n is asserted closes the window */
+				first_loop = false;
+				continue;
+			}
 			XCloseDisplay(display);
 			exit(0);
 		}
