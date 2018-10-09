@@ -129,3 +129,5 @@ release, along with the version current as of the given release.
   versions of Make.
 
 * pdfutil has been deprecated due to poor code quality.
+
+* Fixed Makefile for `bytesh` to build on OpenBSD

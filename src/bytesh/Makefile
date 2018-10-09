@@ -3,7 +3,7 @@ DATE=$(shell date +'%B %Y')
 VERSION=$(shell ./$(PROG) --version)
 
 CC=gcc
-CFLAGS=-Wall -Wextra -pedantic -std=c99 -O3 -Werror -lreadline
+CFLAGS=-Wall -Wextra -pedantic -std=c99 -O3 -lreadline -fgnu89-inline -lcurses
 
 generate: $(BIN_DIR) $(MAN_DIR) $(PROG) $(PROG).1
 	cp ./$(PROG) $(BIN_DIR)
