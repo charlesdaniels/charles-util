@@ -18,6 +18,7 @@
 	* [charles-util R4](#charles-util-r4)
 		* [Other Changes](#other-changes-2)
 	* [charles-util R5](#charles-util-r5)
+		* [Other Changes](#other-changes-3)
 
 <!-- vim-markdown-toc -->
 
@@ -118,3 +119,11 @@ release, along with the version current as of the given release.
 
 * picobar: 0.0.2
 * colortool: 1.0.1
+
+#### Other Changes
+
+* Replace top-level `Makefile` with `build.sh` script, which allows a greater
+  degree of configuration, such as disable `pp` or `pyinstaller`. This is to
+  support installation on systems such as OpenBSD which don't have support from
+  one or more of these. The new build script also correctly detects non-GNU
+  versions of Make.

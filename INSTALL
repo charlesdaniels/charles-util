@@ -1,12 +1,12 @@
 To install from a release, simply run:
 
-	sudo make install
+	sudo ./build.sh install
 
-To install into /usr/local/.
+To install into /usr/local/. See ./build.sh -h for more information.
 
 To install from source, you first need to run
 
-	make generate
+	./build.sh build
 
 Known dependencies to install from source:
 

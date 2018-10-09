@@ -2,6 +2,7 @@ MODULES=-M POSIX -M Config -M Config::Tiny -M Time::HiRes -M Net -M Filesys::Df 
 PROG=$(shell basename $$(pwd))
 DATE=$(shell date +'%B %Y')
 VERSION=$(shell ./$(PROG) --version)
+USE_PP=0
 
 .PHONY: all main clean
 
@@ -11,7 +12,7 @@ generate: $(BIN_DIR) $(MAN_DIR) $(PROG) $(PROG).1
 	cp $(PROG).1 $(MAN_DIR)/man1/
 
 %: %.pl
-	pp -x --xargs="--config ./config.ini --oneoff" -o $@ $^
+	if [ $(USE_PP) -eq 0 ] ; then pp -x --xargs="--config ./config.ini --oneoff" -o $@ $^ ; else cp $< $@ ; fi
 
 $(PROG).1: $(PROG).1.tr $(PROG)
 	sed 's/##DATE##/$(DATE)/g' < $< | sed 's/##VERSION##/$(VERSION)/g' > $@
