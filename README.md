@@ -127,3 +127,5 @@ release, along with the version current as of the given release.
   support installation on systems such as OpenBSD which don't have support from
   one or more of these. The new build script also correctly detects non-GNU
   versions of Make.
+
+* pdfutil has been deprecated due to poor code quality.
