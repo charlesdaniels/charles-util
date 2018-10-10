@@ -23,7 +23,7 @@ no if $] >= 5.018, warnings => qw( experimental::smartmatch );
 sub strip {
 	# Behaves similarly to Python's str.split(). Removes whitespace
 	# characters from the left and right half of the string.
-	my ($data) = shift // confess ("did not specify data to strip");
+	my ($data) = shift // return "";
 
 	# Taken from here: https://mail.python.org/pipermail/python-list/1999-August/016715.html
 	$data =~ s/^\s+//;
@@ -366,7 +366,7 @@ sub get_ssid {
 			OUTER:
 			foreach my $line (split /\n/, $ifconfig) {
 				foreach my $item ($line =~ /(ieee80211.*)/) {
-					$ssid = (split /["]/, $item)[1];
+					$ssid = strip((split /["]/, $item)[1]);
 					last OUTER;
 				}
 			}
