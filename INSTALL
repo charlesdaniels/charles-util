@@ -22,5 +22,5 @@ Known dependencies to install from source:
 * libnet-address-ip-local-perl
 * libnumber-bytes-human-perl
 * libpar-packer-perl
-* libsys-meminfo-perl
 * libtimedate-perl
+* libinline-perl

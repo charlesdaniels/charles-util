@@ -117,7 +117,7 @@ release, along with the version current as of the given release.
 
 ### charles-util R5
 
-* picobar: 0.0.2
+* picobar: 0.1.0
 * colortool: 1.0.1
 
 #### Other Changes
