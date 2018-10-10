@@ -111,12 +111,11 @@ exactly one instance of "%s" which will be replaced with the current volume
 percentage. The default value is "%s%%".
 
 .IP volume_command
-If either 'pacmd' or 'amixer' are specified, the output of the given command
-will be parsed appropriately. If any other value is specified, it will be
-executed as a command the output of which will be assumed to be the current
-volume percentage. If nothing is specified, either pacmd or amixer will
-be chosen according to which is installed.
-
+If any of 'mixerctl', 'pacmd' or 'amixer' are specified, the output of the
+given command will be parsed appropriately. If any other value is specified, it
+will be executed as a command the output of which will be assumed to be the
+current volume percentage. If nothing is specified, mixerctl, pacmd or amixer
+will be chosen according to which is installed.
 
 .RE
 
@@ -127,11 +126,12 @@ Get the currently connected wifi SSID. The following fields may be specified:
 .RS
 
 .IP method 0.4i
-If "nmcli" is specified, the output of the "nmcli" command will be parsed
-to obtain the SSID. If any other value is specified, it will be executed as
-a command and the output taken to be the name of the current SSID. If no
-value is specified, nmcli will be selected automatically if the nmcli command
-is available.
+If "nmcli" is specified, the output of the "nmcli" command will be parsed to
+obtain the SSID. If "openbsd" is specified ,the output of the "ifconfig"
+command will be parsed to obtain the SSID. If any other value is specified, it
+will be executed as a command and the output taken to be the name of the
+current SSID. If no value is specified, nmcli will be selected automatically if
+the nmcli command is available.
 
 .IP format 0.4i
 A format string which must contain exactly one instance of "%s", which will be
@@ -175,12 +175,11 @@ Get the current system load average. The following fields are available:
 .RS
 
 .IP method 0.4i
-If "proc" is specified, then /proc/loadavg will be parsed to obtain the
-load average. If "uptime" is specified, then the output of the uptime
-command will be parsed to obtain the load average. If any other value is
-specified, it will be executed as a command and it's output treated as
-the load average. If unspecified, picobar will select automatically from
-proc and uptime.
+If "proc" is specified, then /proc/loadavg will be parsed to obtain the load
+average. If "loadavg" is specified, inline C will be used to call getloadavg()
+to obtain the current load average. If any other value is specified, it will be
+executed as a command and it's output treated as the load average. If
+unspecified, picobar will select automatically from proc and uptime.
 
 .IP format 0.4i
 A format string. Exactly one instance of "%s" will be replaced with the current
@@ -205,16 +204,15 @@ Get memory information about the system. The following fields are available:
 .RS
 
 .IP format 0.4i
-The following format tags are available: #total, #free, #swapfree, and
-#swaptotal, corresponding to the total memory install, free memory, free swap
-space, and total swap space, respectively. The default value for this field
-is "free: #free".
+The following format tags are available: #total, and #free, corresponding to
+the total memory install and free memory, respectively. The default value for
+this field is "free: #free".
 
 .RE
 
 .IP \fB[coretemp]\fR
 Get the current CPU core temperature. This is currently only supported on
-Linux. The following fields are available:
+Linux and systems which use sysctl. The following fields are available:
 
 .RS
 
@@ -246,6 +244,40 @@ Fixed bug where failing to obtain the current IP address would cause picobar to
 crash. In particular, this would be triggered any time the system lost it's
 connection, such as while waking from suspend. Failure to obtain the current IP
 now displays a warning.
+
+.RE
+
+.IP 0.1.0
+
+.RS
+
+.IP \[bu] 0.4i
+No longer uses Sys::Meminfo because of lack of portability. Inline C is now
+used to gather memory information. Note that all swap-related format tags are
+now deprecated.
+
+.IP \[bu] 0.4i
+Remove support for parsing uptime command due to lack of portability.  (remove
+load average method "uptime")/
+
+.IP \[bu] 0.4i
+On non-linux systems, inline C is used to call getloadavg() to get load
+average. (add load average method "loadavg").
+
+.IP \[bu] 0.4i
+Add support for getting battery info via apm.
+
+.IP \[bu] 0.4i
+Add support for getting volume information via mixerctl.
+
+.IP \[bu] 0.4i
+Add support for getting connected SSID on OpenBSD by parsing ifconfig.  (added
+ssid method "openbsd"). Note that support is still early and there may be edge
+cases.
+
+.IP \[bu] 0.4i
+Add support for getting core temperature via sysctl. Note that support is still
+early and there may be edge cases.
 
 .RE
 

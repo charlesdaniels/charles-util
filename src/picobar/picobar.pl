@@ -8,8 +8,7 @@ use Config::Tiny;
 use Time::HiRes;
 use Net::Address::IP::Local;
 use Filesys::Df;
-use Number::Bytes::Human;
-use Sys::MemInfo;
+use Number::Bytes::Human qw(format_bytes);
 use Getopt::Long;
 use File::Path::Expand;
 use Carp;
@@ -96,7 +95,7 @@ sub get_time {
 
 sub have_command {
 	my $cmd_name = shift // confess ("did not specify command to check");
-	my $cmd_path = `which $cmd_name`;
+	my $cmd_path = `which $cmd_name 2>/dev/null`;
 
 	# avoid a check against an empty string
 	if ($cmd_path eq "") { return 0; }
@@ -108,7 +107,7 @@ sub get_battery {
 	# Get the current battery status. Note that this is not robust in
 	# systems that have multiple batteries.
 	#
-	# OS Support: Linux
+	# OS Support: Linux, Anything with apm (OpenBSD)
 
 	my $config = shift // confess ("did not provide config");
 
@@ -158,6 +157,21 @@ sub get_battery {
 			}
 		}
 
+	} elsif (have_command("apm")) {
+		my $apm_status = strip(`apm -a`);
+		if    ($apm_status eq 0) {$battery_status = "BAT"; }
+		elsif ($apm_status eq 1) {$battery_status = "AC";  }
+		else {$battery_status = "FAULT";}
+
+		$battery_percentage = strip(`apm -l`);
+
+		my $apm_time_left = strip(`apm -m`);
+		if ($apm_time_left eq "unknown") {$battery_time_left = "?";}
+		else {
+			my $time_seconds = $apm_time_left * 60;
+			my @time_left = ($time_seconds, 0, 0, 0, 0, 0, 0, 0, 0) ;
+			$battery_time_left = POSIX::strftime("%H:%M", @time_left);
+		}
 	}
 
 	my $battery_string = $format;
@@ -213,6 +227,7 @@ sub get_volume {
 	}
 	elsif (have_command("pacmd")) {$volume_cmd = "pacmd";}
 	elsif (have_command("amixer")) {$volume_cmd = "amixer";}
+	elsif (have_command("mixerctl")) {$volume_cmd = "mixerctl";}
 
 	my $volume = "UNSUPPORTED";
 
@@ -261,6 +276,11 @@ sub get_volume {
 				}
 
 			}
+		}
+		when ("mixerctl") {
+			my $mixerctl = `mixerctl outputs.master`;
+			$volume = ((split /,/, $mixerctl)[1] / 255) * 100;
+			$volume = sprintf("%0.0f", $volume);
 		}
 		default {
 			$volume = strip(`$volume_cmd`);
@@ -315,6 +335,7 @@ sub get_ssid {
 		$method = $config->{ssid}->{method};
 	}
 	elsif (have_command("nmcli")) { $method = "nmcli"; }
+	elsif ($Config{osname} eq "openbsd") {$method = "openbsd"; }
 	else { $method = "UNSUPPORTED"; }
 
 	# get format from config file
@@ -340,6 +361,17 @@ sub get_ssid {
 			}
 		}
 
+		when ("openbsd") {
+			my $ifconfig = `ifconfig`;
+			OUTER:
+			foreach my $line (split /\n/, $ifconfig) {
+				foreach my $item ($line =~ /(ieee80211.*)/) {
+					$ssid = (split /["]/, $item)[1];
+					last OUTER;
+				}
+			}
+		}
+
 		when ("UNSUPPORTED") {
 			$ssid = "UNSUPPORTED";
 		}
@@ -354,12 +386,6 @@ sub get_ssid {
 
 sub get_load_average {
 	# Get the current system load average.
-	#
-	# The following methods are supported:
-	#
-	# * 'proc' - parse /proc/loadavg
-	#
-	# * 'uptime' - parse the output of the `uptime` command
 	#
 	# The following config keys are recognized from [load_average]
 	#
@@ -382,8 +408,7 @@ sub get_load_average {
 		$method = $config->{load_average}->{method};
 	}
 	elsif ($Config{osname} eq "linux") { $method = "proc";        }
-	elsif (have_command("uptime")    ) { $method = "uptime";       }
-	else                               { $method = "UNSUPPORTED"; }
+	else                               { $method = "loadavg"; }
 
 	# load format string from config
 	my $format = "%s";
@@ -393,17 +418,24 @@ sub get_load_average {
 
 	my $load_average = "UNSUPPORTED";
 	given ($method) {
-		when ("uptime") {
-			my $uptime = `uptime`;
-			$load_average = strip((split /:/, $uptime)[4]);
-		}
 		when ("proc") {
 			my $proc = read_file("/proc/loadavg");
 			my @elements = split / /, $proc;
 			$load_average = "$elements[0], $elements[1], $elements[2]";
 		}
-		when ("UNSUPPORTED") {
-			$load_average = "UNSUPPORTED";
+		when ("loadavg") {
+			use Inline C => <<'END_OF_C_CODE';
+				double c_get_load_avg(unsigned int n) {
+					double a[3];
+					getloadavg(a, 3);
+					return a[n % 2];
+				}
+END_OF_C_CODE
+
+			$load_average = sprintf("%0.2f, %0.2f, %0.2f",
+				c_get_load_avg(0),
+				c_get_load_avg(1),
+				c_get_load_avg(2));
 		}
 		default {
 			$load_average = `$method`;
@@ -499,14 +531,6 @@ sub get_fsinfo {
 
 sub get_meminfo {
 	# Get system memory information.
-	#
-	# Config keys available in the section [meminfo] are:
-	#
-	# * 'format' - Supports the substitutions #total, #free, #swaptotal,
-	#              #swapfree, and #dirty. The default format string is
-	#              'free: #free'.
-	#
-	# OS Support: Any (#dirty is available on Linux only)
 
 	my $config = shift // confess ("did not provide config");
 
@@ -516,17 +540,28 @@ sub get_meminfo {
 		$format = $config->{meminfo}->{format};
 	}
 
-	my $freemem   = Number::Bytes::Human::format_bytes(Sys::MemInfo::freemem());
-	my $totalmem  = Number::Bytes::Human::format_bytes(Sys::MemInfo::totalmem());
-	my $freeswap  = Number::Bytes::Human::format_bytes(Sys::MemInfo::freeswap());
-	my $totalswap = Number::Bytes::Human::format_bytes(Sys::MemInfo::totalswap());
+	use Inline C => << 'END_OF_C_CODE';
+		unsigned long c_get_page_size() {
+		    return sysconf(_SC_PAGE_SIZE);
+		}
+
+		unsigned long c_get_pages() {
+			return sysconf(_SC_PHYS_PAGES);
+		}
+
+		unsigned long c_get_avail_pages() {
+			return sysconf(_SC_AVPHYS_PAGES);
+		}
+
+END_OF_C_CODE
+
+	my $freemem  = format_bytes(c_get_page_size() * c_get_avail_pages());
+	my $totalmem = format_bytes(c_get_page_size() * c_get_pages());
 
 	my $memstr = $format;
 
 	$memstr =~ s/#total/$totalmem/g;
 	$memstr =~ s/#free/$freemem/g;
-	$memstr =~ s/#swapfree/$freeswap/g;
-	$memstr =~ s/#swaptotal/$totalswap/g;
 
 	return $memstr;
 }
@@ -538,7 +573,7 @@ sub get_coretemp {
 	#
 	# * 'format' - format string, defaults to '#temp C'
 	#
-	# OS Support: Linux
+	# OS Support: Linux, anything with OpenBSD-style sysctl
 	my $config = shift // confess ("did not provide config");
 
 	# handle format string override from config file
@@ -555,6 +590,10 @@ sub get_coretemp {
 			$temp = strip(read_file("$linux_zonepath/temp"));
 			$temp = $temp / 1000;
 		}
+	} elsif (have_command("sysctl")) {
+		my $sysctl_temp = strip(`sysctl hw.sensors.cpu0.temp0`);
+		$temp = (split /[=]/, $sysctl_temp)[1];
+		$temp =~ s/degC//g;
 	}
 
 	my $tempstr = $format_str;
