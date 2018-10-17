@@ -473,7 +473,7 @@ sub get_ip {
 	my $address = "127.0.0.1";
 
 	try {
-		$address = Net::Address::IP::Local->public;
+		$address = Net::Address::IP::Local->public_ipv4;
 	} catch {
 		carp("failed to get IP address: $_");
 	};
