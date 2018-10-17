@@ -365,9 +365,16 @@ sub get_ssid {
 			my $ifconfig = `ifconfig`;
 			OUTER:
 			foreach my $line (split /\n/, $ifconfig) {
-				foreach my $item ($line =~ /(ieee80211.*)/) {
-					$ssid = strip((split /["]/, $item)[1]);
-					last OUTER;
+				if (index($line, "\"") != -1) {
+					foreach my $item ($line =~ /(ieee80211.*)/) {
+						$ssid = strip((split /["]/, $item)[1]);
+						last OUTER;
+					}
+				} else {
+					foreach my $item ($line =~ /(ieee80211.*)/) {
+						$ssid = strip((split /[ ]/, $item)[2]);
+						last OUTER;
+					}
 				}
 			}
 		}
@@ -660,7 +667,7 @@ GetOptions(
 
 # handle --version
 if ($version_flag) {
-	printf("0.0.2\n");
+	printf("0.1.1\n");
 	exit(0);
 }
 
