@@ -14,9 +14,13 @@ generate: $(BIN_DIR) $(MAN_DIR) tagdump.1 tagsearch.1 dist/tagdump dist/tagsearc
 	mkdir -p $(MAN_DIR)/man1
 	cp *.1 $(MAN_DIR)/man1/
 
-dist/%: %.py pip3.log .virtualenv/bin/activate
+dist/tagdump: tagdump.py pip3.log .virtualenv/bin/activate
 	mkdir -p dist
-	if [ $(USE_PYINSTALLER) -eq 0 ] ; then $(call venv,pyinstaller --strip --onefile %.py) ; else cp $< $@ ; fi
+	if [ $(USE_PYINSTALLER) -eq 0 ] ; then $(call venv,pyinstaller --strip --onefile tagdump.py) ; else cp $< $@ ; fi
+
+dist/tagsearch: tagsearch.py pip3.log .virtualenv/bin/activate
+	mkdir -p dist
+	if [ $(USE_PYINSTALLER) -eq 0 ] ; then $(call venv,pyinstaller --strip --onefile tagsearch.py) ; else cp $< $@ ; fi
 
 tagdump.1: tagdump.1.tr
 	sed 's/##DATE##/$(DATE)/g' < $< | sed 's/##VERSION##/$(TAGDUMP_VERSION)/g' > $@
