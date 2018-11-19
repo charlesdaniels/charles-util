@@ -1,26 +1,24 @@
-To install from a release, simply run:
+#### Installation Instructions ################################################
 
-	sudo ./build.sh install
+make
+sudo make install
 
-To install into /usr/local/. See ./build.sh -h for more information.
+Optionally, you may override PREFIX to use an installation destination other
+than /usr/local
 
-To install from source, you first need to run
+#### Uninstallation Instructions ##############################################
 
-	./build.sh build
+make
+sudo make uninstall
 
-Known dependencies to install from source:
+#### Dependencies #############################################################
 
-* python3.X with pip and virtualenv
-* upx (optional but recommended)
-* groff
-* bookman
-* pandoc
+* python3.X
+* python modules
+	* taglib
+	* lxml
+	* yaml
 * taglib development files (libtag1-dev on Debian, taglib-devel on Fedora)
-* libconfig-tiny-perl
-* libfile-path-expand-perl
-* libfilesys-df-perl
-* libnet-address-ip-local-perl
-* libnumber-bytes-human-perl
-* libpar-packer-perl
-* libtimedate-perl
-* libinline-perl
+* ncurses
+* x11
+* readline

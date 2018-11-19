@@ -2,7 +2,6 @@
 
 ## Contents
 
-
 <!-- vim-markdown-toc GFM -->
 
 * [Introduction](#introduction)
@@ -41,10 +40,6 @@ constant tools at specific versions.
 ## Future Plans
 
 * Testing methodology for individual tools where possible.
-* TravisCI setup
-* TravisCI Release Uploading
-* Better man pages for pdfutil
-* Refactoring for pdfutil
 
 ## Installation
 
