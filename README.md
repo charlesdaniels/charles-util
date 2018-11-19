@@ -117,17 +117,23 @@ release, along with the version current as of the given release.
 
 ### charles-util R5
 
-* picobar: 0.1.0
 * colortool: 1.0.1
 
 #### Other Changes
 
-* Replace top-level `Makefile` with `build.sh` script, which allows a greater
-  degree of configuration, such as disable `pp` or `pyinstaller`. This is to
-  support installation on systems such as OpenBSD which don't have support from
-  one or more of these. The new build script also correctly detects non-GNU
-  versions of Make.
+* Deprecate pyinstaller / perlpacker binary generation, to reduce complexity
 
-* pdfutil has been deprecated due to poor code quality.
+* Migrate to a single shared src/bin/man directory, to reduce complexity
 
-* Fixed Makefile for `bytesh` to build on OpenBSD
+* Top-level `Makefile` is now BSD-make compatible
+
+* Deprecate pdfutil due to poor code quality
+
+* Deprecate bacchus, as I no longer have a use case for it and am thus not
+  interested in maintaining it
+
+* Deprecate picobar, as I no longer have a use case for it. There are also
+  better alternatives already available in the wild.
+
+* Deprecate rtspman due to code quality concerns and lack of use. openRTSP
+  is suggested as an alternative.

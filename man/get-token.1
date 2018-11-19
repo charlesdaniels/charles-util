@@ -1,0 +1,69 @@
+.TH GET-TOKEN "1" "September 2018" "get-token " "User Commands"
+
+.SH NAME
+get-token \- store and manage API tokens
+
+.SH SYNOPSIS
+usage: get\-token [\-h] [\-\-tokenstore TOKENSTORE] [\-\-add ADD ADD] [\-\-get GET]
+[\-\-remove REMOVE] [\-\-list] [\-\-version]
+
+.SH DESCRIPTION
+.PP
+This script is used to interact with API tokens on disk in a programmatic way.
+This is specifically useful for writing scripts that need to access API
+tokens. The value of this approach is that all tokens are aggregated into a
+single file that can be readily transferred between systems with a single
+rsync command.
+.SS "optional arguments:"
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+show this help message and exit
+.TP
+\fB\-\-tokenstore\fR TOKENSTORE, \fB\-t\fR TOKENSTORE
+Specify path to token store file. (default:
+~/.config/tokenstore/tokenstore.yaml)
+.TP
+\fB\-\-add\fR ADD ADD, \fB\-a\fR ADD ADD
+Add a new token to the store, overwriting it if it
+exists already. First argument is name, and the second
+is the token string.
+.TP
+\fB\-\-get\fR GET, \fB\-g\fR GET
+Retrieve the specified token string by it's name.
+.TP
+\fB\-\-remove\fR REMOVE, \fB\-r\fR REMOVE
+Delete the specified key from the tokenstore by it's
+name
+.TP
+\fB\-\-list\fR, \fB\-l\fR
+List available token names.
+.TP
+\fB\-\-version\fR
+show program's version number and exit
+
+.SH FILES
+
+.IP tokenstore
+
+.B get-token
+stores tokens in the tokenstore file. By default, this file resides at
+~/.config/tokenstore/tokenstore.yml, but an alternative tokenstore may be 
+specified using the
+.B --tokenstore
+flag.
+
+This file is a key-value pair store in YAML format.
+
+
+.SH CHANGELOG
+
+.IP 0.0.1
+Initial version.
+
+.IP 0.0.2
+Corrected an incorrect call to exit() that caused the exit code to always be
+nonzero.
+
+.SH COPYRIGHT
+
+(c) 2018 Charles A. Daniels, All Rights Reserved.

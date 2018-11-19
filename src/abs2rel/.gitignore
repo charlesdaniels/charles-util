@@ -1,6 +1,0 @@
-abs2rel.1
-dist/
-build/
-__pycache__/
-pip3.log
-.virtualenv

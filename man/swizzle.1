@@ -1,0 +1,103 @@
+.TH SWIZZLE "1" "October 2018" "swizzle 0.0.2" "User Commands"
+.SH NAME
+swizzle - modify sub-group orderings of records
+
+.SH SYNOPSIS
+swizzle [\-h] [\-\-rs RS] [\-\-input INPUT] \fB\-\-spec\fR SPEC [\-\-output
+OUTPUT] [\-\-onempty ONEMPTY] [\-\-no_strip] [\-\-version]
+
+.SH DESCRIPTION
+.PP
+
+A tool for re\-ordering input records in an intuitive way. Input records are
+ordered into groups of the same size as the spec (a spec of size 3 would mean
+groups of 3). Each such group is re\-ordered according to the spec. The spec is
+a comma delimited list of integers which act as subscripts into the group,
+such that an input of 'a b c d' with a spec of '1,1,2,2' would produce as
+output 'b b c c', and the same input with a spec of '3,2,1,0' would produce 'd
+c b a'. This program was inspired by the 'swizzle' operation in the game
+EXAPUNKS. If the number of records of input is not a multiple of group size,
+then any references to non\-existent indices in the spec are simply ignored.
+
+.SS "optional arguments:"
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+show this help message and exit
+.TP
+\fB\-\-rs\fR RS, \fB\-r\fR RS
+Override record seperator. (default: newline)
+.TP
+\fB\-\-input\fR INPUT, \fB\-i\fR INPUT
+Specify file to read records from (default: standard
+in)
+.TP
+\fB\-\-spec\fR SPEC, \fB\-s\fR SPEC
+Specify the spec (i.e. 0,1,2,3)
+.TP
+\fB\-\-output\fR OUTPUT, \fB\-o\fR OUTPUT
+Specify a file to write the results to (default:
+standard out
+.TP
+\fB\-\-no_strip\fR, \fB\-N\fR
+Do not strip anything from the input. By default,
+\&.strip()is called on each record of input.
+.TP
+\fB\-\-version\fR
+show program's version number and exit
+
+.SH EXAMPLES
+
+.PP
+$ echo 'a\\nb\\nc\\nd' | swizzle --spec 0,1
+
+.IP
+a
+.br
+b
+.br
+c
+.br
+d
+
+.PP
+$ echo 'a\\nb\\nc\\nd' | swizzle --spec 1,0
+
+.IP
+b
+.br
+a
+.br
+d
+.br
+c
+
+.PP
+$ echo 'a,b,c,d' | swizzle --spec 3,2,1,0 --rs ','
+
+.IP
+d,c,b,a
+
+.PP
+$ echo 'a,b,c,d' | swizzle --spec 0,0,2,2 --rs ','
+
+.IP
+a,a,c,c
+
+.SH HISTORY
+
+swizzle was originally written in early September of 2018 after the author
+spent an inordinate amount of time trying to find an elegant solution to
+re-order individual PDF pages such that every sub-group of 4 pages had the
+third and fourth page swapped. As a suitable shell-friendly solution could
+not be found, swizzle was born.
+
+.SH CHANGELOG
+
+.IP 0.0.1
+Initial version.
+
+.IP 0.0.2
+Remove unused --onempty flag, explicitly use sys.exit instead of exit.
+
+.SH COPYRIGHT
+(c) Charles A. Daniels 2018, All Rights Reserved

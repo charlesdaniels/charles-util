@@ -1,0 +1,84 @@
+.TH ABS2REL "1" "Nov 18 2018" "abs2rel 0.0.1"User Commands"
+
+.SH NAME
+
+.PP
+abs2rel - convert absolute paths to relative
+
+.SH SYNOPSIS
+.PP
+abs2rel [\-h] [\-\-version] [\-\-input INPUT] [\-\-output OUTPUT]
+[\-\-relative_to RELATIVE_TO]
+[paths [paths ...]]
+
+.SH DESCRIPTION
+.PP
+Convert a list of paths piped in on standard in to be relative to a given path
+(./ by default). This is useful when dealing with other scripts that require
+relative paths.
+.SS "positional arguments:"
+.TP
+paths
+If standard in is a tty, used as paths to convert,
+otherwise ignored.
+.SS "optional arguments:"
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+show this help message and exit
+.TP
+\fB\-\-version\fR
+show program's version number and exit
+.TP
+\fB\-\-input\fR INPUT, \fB\-i\fR INPUT
+Input file to read the (newline\-delimited) list of
+files from. (default: standard input)
+.TP
+\fB\-\-output\fR OUTPUT, \fB\-o\fR OUTPUT
+Output file to write converted paths to (newline delimited). Note that his file will be overwritten,
+not appended to. (default: standard out)
+.TP
+\fB\-\-relative_to\fR RELATIVE_TO, \fB\-r\fR RELATIVE_TO
+Path to make the input paths relative to. (default:
+current working directory)
+
+.SH EXAMPLES
+
+.PP
+$ pwd
+.IP
+ /home/cad/Desktop/test1/test2
+
+.PP
+$ abs2rel /home/cad
+
+.IP
+ \.\./\.\./\.\.
+
+.PP
+$ abs2rel /home/cad/Desktop/test1
+
+.IP
+ \.\.
+
+.PP
+$ cd ..
+
+.PP
+$ abs2rel /home/cad/Desktop/test1/test2
+
+.IP
+test2
+
+.PP
+$ echo '/home/cad/Desktop' | abs2rel
+
+.IP
+ \.\./\.\./Desktop
+
+.SH CHANGELOG
+
+.IP 0.0.1
+Initial version.
+
+.SH COPYRIGHT
+(c) 2018 Charles A. Daniels, All Rights Reserved

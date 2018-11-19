@@ -2,9 +2,14 @@ doc/build
 doc/source/script
 *.pyc
 __pycache__
-bin
-man
 *.tar.xz
 manual.pdf
 *.swp
 *.swo
+*.o
+*.gch
+*.core
+bin/colortool
+bin/bytesh
+src/colortool
+src/bytesh

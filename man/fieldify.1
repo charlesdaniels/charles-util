@@ -1,0 +1,132 @@
+.TH FIELDIFY "1" "October 2018" "fieldify 0.1.0" "User Commands"
+
+.SH NAME
+fieldify - normalize field separators in streaming data
+
+.SH SYNOPSIS
+fieldify [\-h] [\-\-version] [\-\-ofs OFS] [\-\-irs IRS] [\-\-ors ORS]
+[\-\-regex REGEX] [\-\-bufsize BUFSIZE]
+
+.SH DESCRIPTION
+
+.PP
+This script consumes streaming data from standard in and splits it along a
+regular expression, then replaces the splits with a set field separator. By
+default, it collapses whitespace\-separated columns into tab\-separated columns.
+.SS "optional arguments:"
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+show this help message and exit
+.TP
+\fB\-\-version\fR
+show program's version number and exit
+.TP
+\fB\-\-ofs\fR OFS, \fB\-F\fR OFS
+Specify output field separator. (default: \et)
+.TP
+\fB\-\-irs\fR IRS, \fB\-f\fR IRS
+Override default input record separator. (default: \en)
+.TP
+\fB\-\-ors\fR ORS, \fB\-R\fR ORS
+Override default output record separator. (default:
+\en)
+.TP
+\fB\-\-regex\fR REGEX, \fB\-r\fR REGEX
+Specify regex to split with, in Python 3.X re
+format.This is used in lieu of an IFS. (default: \es
+.TP
+\fB\-\-bufsize\fR BUFSIZE, \fB\-b\fR BUFSIZE
+Override read buffer size. (default: 4096)
+.TP
+\fB\-\-nomatchdrop\fR, \fB\-m\fR
+By default, fields which match \fB\-\-regex\fR are dropped.
+This prevents instances of the field separator from
+appearing in the output. Asserting this option will
+disable dropping such fields. This flag and the field
+dropping behavior were added in 0.1.0.
+
+.SH EXAMPLES
+
+.PP
+$ echo 'axxxbxczdxexxf' | fieldify --regex '[x]' --irs z
+
+.IP
+a	b	c
+.br
+d	e	f
+
+.PP
+$ echo 'a  b c\\nd    e       f' | fieldify
+
+.IP
+a	b	c
+.br
+d	e	f
+
+.PP
+$ echo 'a  b c\\nd    e       f' | fieldify --ofs ','
+
+.IP
+a,b,c
+.br
+d,e,f
+
+.PP
+$ echo 'a  b c\\nd    e       f' | fieldify --ofs ',' --ors '|'
+
+.IP
+a,b,c|d,e,f
+
+.SH NOTES
+
+.PP
+The \fB--bufsize\fR flag should never affect the output, but it may be
+beneficial to tweak it for performance reasons in different use cases. If you
+observe different output while changing the buffer size, you should report this
+as a bug.
+
+.PP
+The behavior of the --nomatchdrop flag is demonstrated below:
+
+.PP
+$ echo 'list, of, several, things, and a final thing' | fieldify -r '(, )|(, and )' --ofs '|'
+
+.IP
+list|of|several|things|and a final thing
+
+.PP
+$ echo 'list, of, several, things, and a final thing' | fieldify -r '(, )|(, and )' --ofs '|' --nomatchdrop
+
+.IP
+list|, |of|, |several|, |things|, |and a final thing
+
+.SH CHANGELOG
+
+.IP 0.0.1
+Initial version.
+
+.IP 0.1.0
+
+.IP \bu 2
+Fixed a bug when a regex was passed via --regex that caused re.split() to
+return instances of None.
+
+.IP \bu 2
+Fields yielded by splitting on --regex which match the regex supplied via
+--regex are now dropped. This avoids edge cases where field delimiters can
+occasionally appear in the output.
+
+.IP \bu 2
+Implemented the --nomatchdrop flag.
+
+
+.SH HISTORY
+.PP
+Fieldify began as a simple awk script, which behaved identically to fieldify
+with the default flags. It was rewritten in September 2018 in Python to support
+arbitrary field and record separators, and to allow the input record separator
+to be specified as a regular expression.
+
+.SH COPYRIGHT
+
+(c) 2018 Charles A. Daniels, All Rights Reserved.
