@@ -1,3 +1,5 @@
+As of 2018-11-18, all further development has moved [here](https://git.sr.ht/%7Echarles/charles-util)
+
 # charles-util
 
 ## Contents
